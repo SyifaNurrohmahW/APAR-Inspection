@@ -1,0 +1,180 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html.dark {
+  --background: #121318;
+  --foreground: #f3f4f6;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode overrides for high quality sleek theme */
+html.dark body {
+  background-color: #121318;
+  color: #f1f5f9;
+}
+
+html.dark header {
+  background-color: rgba(24, 26, 35, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark aside {
+  background-color: #0b0c10 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark .bg-white {
+  background-color: #1a1d27 !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark .bg-\[\#fffaf8\] {
+  background-color: #121318 !important;
+}
+
+html.dark .bg-\[\#fbf7f5\],
+html.dark .bg-\[\#fffaf8\]\/85 {
+  background-color: #161822 !important;
+}
+
+html.dark .bg-\[\#f5eeeb\],
+html.dark .bg-\[\#f4ebe8\],
+html.dark .bg-\[\#f5f0ee\] {
+  background-color: #232736 !important;
+}
+
+html.dark .border-\[\#eadfdb\],
+html.dark .border-\[\#f0e8e4\] {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark .text-\[\#1f1b1a\],
+html.dark .text-\[\#151211\] {
+  color: #f8fafc !important;
+}
+
+html.dark .text-\[\#6f625f\],
+html.dark .text-\[\#7f716d\],
+html.dark .text-\[\#8c7c78\],
+html.dark .text-\[\#9b8d89\],
+html.dark .text-\[\#a0928e\] {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-\[\#c2aaa3\] {
+  color: #94a3b8 !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #161822 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus,
+html.dark .focus\:bg-white:focus,
+html.dark .focus\:bg-\[\#fffaf8\]:focus {
+  background-color: #1a1d27 !important;
+  color: #f8fafc !important;
+}
+
+/* Dark mode hover overrides - transparent light gray hover */
+html.dark tr:hover,
+html.dark tbody tr:hover,
+html.dark .hover\:bg-\[\#fffaf8\]:hover,
+html.dark .hover\:bg-\[\#fff5f3\]:hover,
+html.dark .hover\:bg-\[\#fbf7f5\]:hover,
+html.dark .hover\:bg-white:hover,
+html.dark .hover\:bg-slate-50:hover,
+html.dark .hover\:bg-gray-50:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+}
+
+html.dark .hover\:bg-\[\#fee9e6\]:hover {
+  background-color: rgba(233, 83, 69, 0.2) !important;
+  color: #ff7a6d !important;
+}
+
+html.dark .hover\:bg-red-50:hover {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
+}
+
+html.dark button.bg-white:hover,
+html.dark a.bg-white:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes softPulse {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.65s ease-out both;
+}
+
+.animate-soft-pulse {
+  animation: softPulse 5s ease-in-out infinite;
+}
