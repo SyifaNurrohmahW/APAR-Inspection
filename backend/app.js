@@ -6,9 +6,12 @@ const port = process.env.PORT || 7000;
 
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || true,
-  credentials: true
+  origin: (origin, callback) => callback(null, true),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+app.options('*', cors());
 app.use(express.json());
 
 //login route
