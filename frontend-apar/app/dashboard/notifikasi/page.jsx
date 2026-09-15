@@ -6,6 +6,8 @@ import {
   Bell,
   CheckCheck,
   ClipboardCheck,
+  MessageSquare,
+  RefreshCw,
   Trash2
 } from 'lucide-react';
 
@@ -17,6 +19,10 @@ import {
   getAllNotifikasi,
   markAllNotifikasiRead
 } from '@/services/notifikasiService';
+import {
+  getWhatsappStatus,
+  syncWhatsappReminders
+} from '@/services/whatsappService';
 import { showConfirm, showFeedback } from '@/utils/feedback';
 
 const formatDate = (value) => {
@@ -68,6 +74,8 @@ const getBadgeClass = (item) => {
 export default function NotifikasiPage() {
   const [notifikasi, setNotifikasi] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [waStatus, setWaStatus] = useState(null);
+  const [syncingWa, setSyncingWa] = useState(false);
 
   const loadNotifikasi = async () => {
     try {
@@ -85,10 +93,19 @@ export default function NotifikasiPage() {
     }
   };
 
+  const loadWaStatus = async () => {
+    try {
+      const status = await getWhatsappStatus();
+      setWaStatus(status);
+    } catch (error) {
+      setWaStatus({ ready: false, message: error.message });
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
-    const loadInitialNotifikasi = async () => {
+    const loadInitialData = async () => {
       try {
         const data = await getAllNotifikasi();
 
@@ -108,14 +125,40 @@ export default function NotifikasiPage() {
           setLoading(false);
         }
       }
+
+      loadWaStatus();
     };
 
-    loadInitialNotifikasi();
+    loadInitialData();
 
     return () => {
       isMounted = false;
     };
   }, []);
+
+  const handleSyncWaReminders = async () => {
+    try {
+      setSyncingWa(true);
+      const result = await syncWhatsappReminders();
+      await loadNotifikasi();
+
+      showFeedback({
+        title: 'Pengingat WA Berhasil Diproses',
+        message: result?.skipped
+          ? result.reason
+          : `Total ${result?.total || 0} pengingat WhatsApp berhasil dikirim via Fonnte.`,
+        type: result?.skipped ? 'info' : 'success'
+      });
+    } catch (error) {
+      showFeedback({
+        title: 'Gagal Kirim WhatsApp',
+        message: error.message,
+        type: 'error'
+      });
+    } finally {
+      setSyncingWa(false);
+    }
+  };
 
   const handleMarkAllRead = async () => {
     if (notifikasi.length === 0) {
@@ -187,16 +230,45 @@ export default function NotifikasiPage() {
         description="Lihat daftar peringatan dan informasi inspeksi APAR yang perlu dipantau."
       />
 
-      <div className="mb-6 flex justify-end">
-        <button
-          type="button"
-          onClick={handleMarkAllRead}
-          disabled={totalBelumDibaca === 0}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#e95345] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#d9473a] disabled:cursor-not-allowed disabled:bg-[#d8cfcb] disabled:text-white"
-        >
-          <CheckCheck size={18} />
-          Tandai Semua Dibaca
-        </button>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        {/* Status Fonnte WA Badge */}
+        <div className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 shadow-sm border border-[#f0e8e4]">
+          <MessageSquare size={18} className={waStatus?.ready ? "text-[#008f55]" : "text-[#e95345]"} />
+          <span className="text-xs font-semibold text-[#6f625f]">
+            Status Fonnte:
+          </span>
+          <span
+            className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+              waStatus?.ready
+                ? 'bg-[#e7f8ef] text-[#008f55]'
+                : 'bg-[#fee9e6] text-[#e95345]'
+            }`}
+          >
+            {waStatus?.ready ? 'Terhubung (Ready)' : waStatus?.status || 'Belum Terhubung'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSyncWaReminders}
+            disabled={syncingWa}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#008f55] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#007546] disabled:cursor-not-allowed disabled:bg-[#d8cfcb]"
+          >
+            <RefreshCw size={16} className={syncingWa ? 'animate-spin' : ''} />
+            {syncingWa ? 'Mengirim...' : 'Kirim Pengingat WA'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleMarkAllRead}
+            disabled={totalBelumDibaca === 0}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#e95345] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#d9473a] disabled:cursor-not-allowed disabled:bg-[#d8cfcb] disabled:text-white"
+          >
+            <CheckCheck size={18} />
+            Tandai Semua Dibaca
+          </button>
+        </div>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">

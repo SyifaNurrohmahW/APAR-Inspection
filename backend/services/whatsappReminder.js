@@ -2,7 +2,7 @@ const Notifikasi = require('../models/notifikasi');
 const {
   buildAparExpiryMessage,
   sendWhatsappMessage
-} = require('./whatsappWebClient');
+} = require('./fonnteService');
 
 const runWhatsappExpiryReminders = (callback = () => {}) => {
   Notifikasi.getPendingWhatsappReminders(async (err, reminders) => {

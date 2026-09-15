@@ -6,13 +6,7 @@ const port = process.env.PORT || 7000;
 
 
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:7000',
-    'http://localhost:7001',
-    'http://localhost:8080'
-  ],
+  origin: process.env.FRONTEND_URL || true,
   credentials: true
 }));
 app.use(express.json());
