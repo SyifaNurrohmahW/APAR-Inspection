@@ -1,4 +1,18 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
+
+const getFormattedApiUrl = (url) => {
+  if (!url) return 'http://localhost:7000/api';
+  let formatted = url.trim();
+  if (!formatted.startsWith('http://') && !formatted.startsWith('https://')) {
+    formatted = `https://${formatted}`;
+  }
+  if (!formatted.endsWith('/api') && !formatted.endsWith('/api/')) {
+    formatted = formatted.replace(/\/+$/, '') + '/api';
+  }
+  return formatted.replace(/\/+$/, '');
+};
+
+const API_BASE_URL = getFormattedApiUrl(rawApiUrl);
 
 export const getAuthToken = () => {
   if (typeof window === 'undefined') {
