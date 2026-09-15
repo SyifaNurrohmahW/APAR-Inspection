@@ -1,12 +1,20 @@
 const db = require('mysql2');
 require('dotenv').config();
 
+const host = process.env.DB_HOST || process.env.MYSQLHOST || '127.0.0.1';
+const user = process.env.DB_USER || process.env.MYSQLUSER;
+const password = process.env.DB_PASSWORD || process.env.MYSQLPASSWORD;
+const database = process.env.DB_NAME || process.env.MYSQLDATABASE;
+const port = process.env.DB_PORT || process.env.MYSQLPORT ? Number(process.env.DB_PORT || process.env.MYSQLPORT) : 3306;
+
+console.log('Connecting to Database host:', host, 'port:', port, 'user:', user, 'database:', database);
+
 const connection = db.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306
+    host: host,
+    user: user,
+    password: password,
+    database: database,
+    port: port
 });
 
 connection.connect((err) => {
