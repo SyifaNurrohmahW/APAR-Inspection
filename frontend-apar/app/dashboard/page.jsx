@@ -302,34 +302,128 @@ export default function DashboardPage() {
           subtitle="Ringkasan status kelayakan unit"
         >
           <div className="flex flex-col items-center">
-            <div className="relative flex h-44 w-44 items-center justify-center rounded-full border-[18px] border-[#08a866]">
-              <div className="absolute h-32 w-32 rounded-full border-[14px] border-[#049aa0]" />
-              <div className="absolute h-20 w-20 rounded-full border-[10px] border-[#e95345]" />
-              <div className="z-10 text-center">
-                <p className="text-3xl font-bold text-[#1f1b1a]">
-                  {percentBaik}%
-                </p>
-                <p className="text-xs text-[#7f716d]">Baik</p>
+            <div className="relative flex h-48 w-48 items-center justify-center">
+              <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 180 180">
+                {/* Background Track */}
+                <circle
+                  cx="90"
+                  cy="90"
+                  r={70}
+                  stroke="#f4ebe8"
+                  strokeWidth="18"
+                  fill="transparent"
+                />
+
+                {totalApar > 0 && (
+                  <>
+                    {aparBaik > 0 && (
+                      <circle
+                        cx="90"
+                        cy="90"
+                        r={70}
+                        stroke="#00a862"
+                        strokeWidth="18"
+                        fill="transparent"
+                        strokeDasharray={`${(aparBaik / totalApar) * (2 * Math.PI * 70)} ${2 * Math.PI * 70}`}
+                        strokeDashoffset={0}
+                        strokeLinecap="butt"
+                        className="transition-all duration-500 ease-out"
+                      />
+                    )}
+                    {aparPerluCek > 0 && (
+                      <circle
+                        cx="90"
+                        cy="90"
+                        r={70}
+                        stroke="#f5a400"
+                        strokeWidth="18"
+                        fill="transparent"
+                        strokeDasharray={`${(aparPerluCek / totalApar) * (2 * Math.PI * 70)} ${2 * Math.PI * 70}`}
+                        strokeDashoffset={-1 * (aparBaik / totalApar) * (2 * Math.PI * 70)}
+                        strokeLinecap="butt"
+                        className="transition-all duration-500 ease-out"
+                      />
+                    )}
+                    {aparBermasalah > 0 && (
+                      <circle
+                        cx="90"
+                        cy="90"
+                        r={70}
+                        stroke="#e95345"
+                        strokeWidth="18"
+                        fill="transparent"
+                        strokeDasharray={`${(aparBermasalah / totalApar) * (2 * Math.PI * 70)} ${2 * Math.PI * 70}`}
+                        strokeDashoffset={-1 * ((aparBaik + aparPerluCek) / totalApar) * (2 * Math.PI * 70)}
+                        strokeLinecap="butt"
+                        className="transition-all duration-500 ease-out"
+                      />
+                    )}
+                  </>
+                )}
+              </svg>
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="text-3xl font-bold text-[#1f1b1a]">
+                  {loading ? '-' : `${percentBaik}%`}
+                </span>
+                <span className="mt-1 rounded-full px-2.5 py-0.5 text-xs font-bold transition bg-[#e7f8ef] text-[#008f55]">
+                  {aparBermasalah > 0
+                    ? `${aparBermasalah} Perlu Action`
+                    : aparPerluCek > 0
+                      ? `${aparPerluCek} Perlu Cek`
+                      : 'Kondisi Baik'}
+                </span>
               </div>
             </div>
 
             <div className="mt-6 w-full space-y-3">
               {[
-                ['Baik', percentBaik, aparBaik, '#08a866'],
-                ['Akan Kedaluwarsa', percentPerluCek, aparPerluCek, '#049aa0'],
-                ['Kedaluwarsa', percentBermasalah, aparBermasalah, '#e95345']
-              ].map(([label, percent, count, color]) => (
-                <div key={label} className="flex items-center justify-between text-sm">
+                {
+                  label: 'Baik',
+                  percent: percentBaik,
+                  count: aparBaik,
+                  color: '#00a862',
+                  bg: 'bg-[#e7f8ef]',
+                  text: 'text-[#008f55]'
+                },
+                {
+                  label: 'Akan Kedaluwarsa',
+                  percent: percentPerluCek,
+                  count: aparPerluCek,
+                  color: '#f5a400',
+                  bg: 'bg-[#fff3d8]',
+                  text: 'text-[#b87500]'
+                },
+                {
+                  label: 'Kedaluwarsa',
+                  percent: percentBermasalah,
+                  count: aparBermasalah,
+                  color: '#e95345',
+                  bg: 'bg-[#fee9e6]',
+                  text: 'text-[#e95345]'
+                }
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center justify-between text-sm"
+                >
                   <span className="flex items-center gap-2 text-[#7f716d]">
                     <span
                       className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: color }}
+                      style={{ backgroundColor: item.color }}
                     />
-                    {label}
+                    {item.label}
                   </span>
-                  <strong>
-                    {percent}% ({count})
-                  </strong>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-bold ${item.bg} ${item.text}`}
+                    >
+                      {item.percent}%
+                    </span>
+                    <span className="font-semibold text-[#1f1b1a]">
+                      ({item.count})
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
