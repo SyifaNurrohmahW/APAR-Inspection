@@ -229,7 +229,7 @@ export default function DashboardPage() {
         'Kode APAR': apar.kode_apar,
         Lokasi: apar.lokasi || '-',
         Jenis: apar.jenis || '-',
-        'Berat (kg)': apar.berat || '-',
+        'Berat (kg)': apar.berat !== null && apar.berat !== undefined && apar.berat !== '' ? parseFloat(apar.berat) : '-',
         Status: apar.status || '-',
         'Inspeksi Terakhir': lastInspeksi ? formatDate(lastInspeksi.tanggal_inspeksi) : '-',
         'Hasil Inspeksi': lastInspeksi ? lastInspeksi.hasil : '-'

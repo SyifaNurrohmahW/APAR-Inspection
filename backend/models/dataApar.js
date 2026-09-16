@@ -2,6 +2,38 @@ const db = require('../config/connection');
 const buildPartialUpdate = require('../helpers/partialUpdate');
 
 const DataApar = {
+  // Inisialisasi / modifikasi kolom tabel jika diperlukan
+  initTable: (callback) => {
+    const query = `
+      CREATE TABLE IF NOT EXISTS ms_apar (
+        id_apar INT AUTO_INCREMENT PRIMARY KEY,
+        id_lokasi INT NOT NULL,
+        kode_apar VARCHAR(50) NOT NULL,
+        jenis VARCHAR(100) NOT NULL,
+        berat DECIMAL(10, 2) NOT NULL,
+        status VARCHAR(50) NOT NULL,
+        tanggal DATE NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+
+    db.query(query, (err, res) => {
+      if (err) {
+        console.error('Gagal memverifikasi/membuat tabel ms_apar:', err);
+      } else {
+        console.log('Tabel ms_apar terverifikasi/siap.');
+        // Pastikan kolom berat bertipe DECIMAL(10, 2) untuk mendukung desimal seperti 4.5
+        db.query('ALTER TABLE ms_apar MODIFY COLUMN berat DECIMAL(10, 2)', (alterErr) => {
+          if (alterErr) {
+            console.error('Gagal memperbarui tipe kolom berat pada ms_apar:', alterErr);
+          }
+        });
+      }
+      if (callback) callback(err, res);
+    });
+  },
+
   // Ambil semua data APAR
   getAll: (callback) => {
     const query = `

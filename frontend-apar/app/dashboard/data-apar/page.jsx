@@ -219,7 +219,7 @@ function DataAparContent() {
       'Kode APAR': item.kode_apar,
       Lokasi: item.lokasi || '-',
       Jenis: item.jenis,
-      Berat: `${item.berat} kg`,
+      Berat: item.berat !== null && item.berat !== undefined ? `${parseFloat(item.berat)} kg` : '-',
       Status: item.status,
       'Tanggal Terakhir': formatDate(item.tanggal)
     }));
@@ -330,7 +330,7 @@ function DataAparContent() {
               {item.jenis || '-'}
             </td>
             <td className="px-3 py-4 font-semibold text-[#1f1b1a]">
-              {item.berat ? `${item.berat} Kg` : '-'}
+              {item.berat !== null && item.berat !== undefined && item.berat !== '' ? `${parseFloat(item.berat)} Kg` : '-'}
             </td>
             <td className="px-3 py-4">
               <span

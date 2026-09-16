@@ -239,10 +239,11 @@ export default function DataAparModal({
               Berat (Kg) <span className="text-[#e95345]">*</span>
               <input
                 type="number"
+                step="any"
                 name="berat"
                 value={formData.berat}
                 onChange={handleChange}
-                placeholder="e.g. 3"
+                placeholder="e.g. 4.5"
                 className={inputClass}
                 required
               />

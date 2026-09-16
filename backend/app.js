@@ -58,7 +58,9 @@ const profileRoutes = require('./routes/profile');
 app.use('/api/profile', profileRoutes);
 
 // Init DB Tables if needed
+const DataAparModel = require('./models/dataApar');
 const JenisBahanModel = require('./models/jenisBahan');
+DataAparModel.initTable();
 JenisBahanModel.initTable();
 
 if (require.main === module) {
