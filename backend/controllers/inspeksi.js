@@ -48,12 +48,13 @@ exports.createInspeksi = (req, res) => {
     tanggal_inspeksi,
     kondisi_tekanan,
     hasil,
-    catatan
+    catatan,
+    foto
   } = req.body;
 
-  if (!id_apar || !tanggal_inspeksi || !kondisi_tekanan || !hasil) {
+  if (!id_apar || !tanggal_inspeksi || !kondisi_tekanan || !hasil || !foto) {
     return res.status(400).json({
-      message: 'Data wajib diisi: id_apar, tanggal_inspeksi, kondisi_tekanan, dan hasil'
+      message: 'Data wajib diisi: id_apar, tanggal_inspeksi, kondisi_tekanan, hasil, dan foto bukti inspeksi'
     });
   }
 
@@ -62,7 +63,8 @@ exports.createInspeksi = (req, res) => {
     tanggal_inspeksi,
     kondisi_tekanan,
     hasil,
-    catatan
+    catatan,
+    foto
   };
 
   Inspeksi.create(data, (err, results) => {
@@ -138,12 +140,13 @@ exports.updateInspeksi = (req, res) => {
     tanggal_inspeksi,
     kondisi_tekanan,
     hasil,
-    catatan
+    catatan,
+    foto
   } = req.body;
 
-  if (!id_apar || !tanggal_inspeksi || !kondisi_tekanan || !hasil) {
+  if (!id_apar || !tanggal_inspeksi || !kondisi_tekanan || !hasil || !foto) {
     return res.status(400).json({
-      message: 'Data wajib diisi: id_apar, tanggal_inspeksi, kondisi_tekanan, dan hasil'
+      message: 'Data wajib diisi: id_apar, tanggal_inspeksi, kondisi_tekanan, hasil, dan foto bukti inspeksi'
     });
   }
 
@@ -152,7 +155,8 @@ exports.updateInspeksi = (req, res) => {
     tanggal_inspeksi,
     kondisi_tekanan,
     hasil,
-    catatan
+    catatan,
+    foto
   };
 
   Inspeksi.update(id, data, (err, results) => {

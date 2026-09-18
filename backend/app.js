@@ -60,8 +60,10 @@ app.use('/api/profile', profileRoutes);
 // Init DB Tables if needed
 const DataAparModel = require('./models/dataApar');
 const JenisBahanModel = require('./models/jenisBahan');
+const InspeksiModel = require('./models/inspeksi');
 DataAparModel.initTable();
 JenisBahanModel.initTable();
+InspeksiModel.initTable();
 
 if (require.main === module) {
   app.listen(port, () => {

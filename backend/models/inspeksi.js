@@ -2,11 +2,53 @@ const db = require('../config/connection');
 const buildPartialUpdate = require('../helpers/partialUpdate');
 
 const Inspeksi = {
+  // Inisialisasi / modifikasi kolom tabel jika diperlukan
+  initTable: (callback) => {
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS tr_inspeksi (
+        id_inspeksi INT AUTO_INCREMENT PRIMARY KEY,
+        id_apar INT NOT NULL,
+        tanggal_inspeksi DATETIME NOT NULL,
+        kondisi_tekanan VARCHAR(50) NOT NULL,
+        hasil VARCHAR(50) NOT NULL,
+        catatan TEXT,
+        foto LONGTEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+
+    db.query(createTableQuery, (err, res) => {
+      if (err) {
+        console.error('Gagal memverifikasi/membuat tabel tr_inspeksi:', err);
+      } else {
+        console.log('Tabel tr_inspeksi terverifikasi/siap.');
+        db.query("SHOW COLUMNS FROM tr_inspeksi LIKE 'foto'", (checkErr, columns) => {
+          if (!checkErr && columns.length === 0) {
+            db.query("ALTER TABLE tr_inspeksi ADD COLUMN foto LONGTEXT NULL AFTER catatan", (alterErr) => {
+              if (alterErr) {
+                console.error('Gagal menambahkan kolom foto ke tr_inspeksi:', alterErr);
+              } else {
+                console.log('Kolom foto berhasil ditambahkan ke tr_inspeksi.');
+              }
+            });
+          }
+        });
+      }
+      if (callback) callback(err, res);
+    });
+  },
+
   // Ambil semua data inspeksi
   getAll: (callback) => {
     const query = `
       SELECT 
-       *
+        tr_inspeksi.*,
+        ms_apar.kode_apar,
+        ms_apar.jenis,
+        ms_apar.berat,
+        ms_apar.status AS status_apar,
+        ms_lokasi.lokasi
       FROM tr_inspeksi
       LEFT JOIN ms_apar 
         ON tr_inspeksi.id_apar = ms_apar.id_apar
@@ -33,6 +75,7 @@ const Inspeksi = {
         tr_inspeksi.kondisi_tekanan,
         tr_inspeksi.hasil,
         tr_inspeksi.catatan,
+        tr_inspeksi.foto,
         tr_inspeksi.created_at,
         tr_inspeksi.updated_at
       FROM tr_inspeksi
@@ -56,10 +99,11 @@ const Inspeksi = {
         kondisi_tekanan,
         hasil,
         catatan,
+        foto,
         created_at,
         updated_at
       )
-      VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
     `;
 
     const values = [
@@ -67,7 +111,8 @@ const Inspeksi = {
       data.tanggal_inspeksi,
       data.kondisi_tekanan,
       data.hasil,
-      data.catatan
+      data.catatan || null,
+      data.foto || null
     ];
 
     db.query(query, values, callback);
@@ -83,6 +128,7 @@ const Inspeksi = {
         kondisi_tekanan = ?,
         hasil = ?,
         catatan = ?,
+        foto = ?,
         updated_at = NOW()
       WHERE id_inspeksi = ?
     `;
@@ -92,7 +138,8 @@ const Inspeksi = {
       data.tanggal_inspeksi,
       data.kondisi_tekanan,
       data.hasil,
-      data.catatan,
+      data.catatan || null,
+      data.foto || null,
       id_inspeksi
     ];
 
@@ -105,7 +152,7 @@ const Inspeksi = {
       'id_inspeksi',
       id_inspeksi,
       data,
-      ['id_apar', 'tanggal_inspeksi', 'kondisi_tekanan', 'hasil', 'catatan'],
+      ['id_apar', 'tanggal_inspeksi', 'kondisi_tekanan', 'hasil', 'catatan', 'foto'],
       { touchUpdatedAt: true }
     );
 
