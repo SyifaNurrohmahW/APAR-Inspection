@@ -3,8 +3,20 @@ import "./globals.css";
 import FeedbackHost from "./components/FeedbackHost";
 
 export const metadata: Metadata = {
-  title: "APAR Inspection",
+  title: {
+    default: "APAR Inspection - Sistem Pemeliharaan APAR",
+    template: "%s | APAR Inspection"
+  },
   description: "Sistem manajemen inspeksi dan pemeliharaan APAR",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.ico" }
+    ],
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({

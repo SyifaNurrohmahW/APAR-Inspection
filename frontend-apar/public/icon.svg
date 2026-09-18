@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="18" fill="#e95345"/>
+  <g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Body of APAR -->
+    <rect x="24" y="26" width="16" height="24" rx="5" />
+    <!-- Pressure Meter / Neck -->
+    <path d="M32 20 v6" />
+    <circle cx="32" cy="18" r="3" />
+    <!-- Handle & Trigger -->
+    <path d="M27 16 h10" />
+    <path d="M30 13 l-4-3" />
+    <!-- Hose -->
+    <path d="M26 23 c-5 0 -7 4 -7 8 s2 8 7 8" />
+    <path d="M26 39 h2" />
+  </g>
+</svg>
