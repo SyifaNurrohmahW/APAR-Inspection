@@ -53,15 +53,20 @@ html.dark .bg-\[\#fffaf8\] {
   background-color: #121318 !important;
 }
 
+html.dark .bg-\[\#faf8f7\],
+html.dark .bg-\[\#faf8f6\],
+html.dark .bg-\[\#faf7f5\],
 html.dark .bg-\[\#fbf7f5\],
 html.dark .bg-\[\#fffaf8\]\/85 {
   background-color: #161822 !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark .bg-\[\#f5eeeb\],
 html.dark .bg-\[\#f4ebe8\],
-html.dark .bg-\[\#f5f0ee\] {
-  background-color: #232736 !important;
+html.dark .bg-\[\#f5f0ee\],
+html.dark .bg-\[\#faf8f7\] {
+  background-color: #161822 !important;
 }
 
 html.dark .border-\[\#eadfdb\],

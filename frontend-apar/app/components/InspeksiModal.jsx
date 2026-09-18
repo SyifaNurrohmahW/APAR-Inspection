@@ -10,7 +10,9 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
-  CameraOff
+  CameraOff,
+  SwitchCamera,
+  FileCheck
 } from 'lucide-react';
 import { getAllDataApar } from '@/services/dataAparService';
 
@@ -51,10 +53,11 @@ export default function InspeksiModal({
   const [form, setForm] = useState(() => getInitialForm(initialData));
   const [fotoError, setFotoError] = useState('');
 
-  // State untuk mode kamera webcam live
+  // State untuk mode kamera webcam/live stream
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraLoading, setCameraLoading] = useState(false);
-  const [cameraErrMessage, setCameraErrMessage] = useState('');
+  const [facingMode, setFacingMode] = useState('environment'); // 'environment' (kamera belakang) atau 'user' (kamera depan)
+  const [isDragging, setIsDragging] = useState(false);
 
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -77,7 +80,6 @@ export default function InspeksiModal({
     }
     setIsCameraActive(false);
     setCameraLoading(false);
-    setCameraErrMessage('');
   };
 
   useEffect(() => {
@@ -173,19 +175,40 @@ export default function InspeksiModal({
     }
   };
 
+  // Drag and Drop Handler
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processImageFile(file);
+    }
+  };
+
   // Mulai streaming kamera live
-  const startLiveCamera = async () => {
-    setCameraErrMessage('');
+  const startLiveCamera = async (overrideFacingMode) => {
+    const targetFacing = overrideFacingMode || facingMode;
+    stopCameraStream();
     setCameraLoading(true);
     setIsCameraActive(true);
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Browser tidak mendukung penangkapan kamera langsung.');
+        throw new Error('Browser tidak mendukung kamera langsung.');
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode: targetFacing, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false
       });
 
@@ -197,13 +220,18 @@ export default function InspeksiModal({
       }
       setCameraLoading(false);
     } catch (err) {
-      console.warn('Gagal akses webcam langsung, fallback ke input kamera bawaan HP:', err);
+      console.warn('Gagal akses live camera, fallback ke input kamera HP:', err);
       stopCameraStream();
-      // Fallback ke trigger file input capture camera jika live stream ditolak/tidak tersedia
       if (cameraInputRef.current) {
         cameraInputRef.current.click();
       }
     }
+  };
+
+  const toggleCameraFacing = () => {
+    const newFacing = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(newFacing);
+    startLiveCamera(newFacing);
   };
 
   // Tangkap foto dari streaming video webcam
@@ -274,36 +302,38 @@ export default function InspeksiModal({
   if (!isOpen) return null;
 
   const inputClass =
-    'h-11 w-full rounded-xl border border-[#eadfdb] bg-white px-4 text-sm font-semibold text-[#151211] outline-none transition placeholder:text-[#8f817d] focus:border-[#e95345] focus:ring-2 focus:ring-[#f6b7af]';
-  const labelClass = 'mb-2 block text-sm font-bold text-[#151211]';
+    'h-11 w-full rounded-xl border border-[#eadfdb] bg-white px-3.5 sm:px-4 text-sm font-semibold text-[#151211] outline-none transition placeholder:text-[#8f817d] focus:border-[#e95345] focus:ring-2 focus:ring-[#f6b7af] active:border-[#e95345]';
+  const labelClass = 'mb-1.5 block text-xs sm:text-sm font-bold text-[#151211]';
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4 overflow-y-auto backdrop-blur-xs">
-      <div className="my-8 w-full max-w-[620px] rounded-3xl bg-white p-6 md:p-8 text-[#151211] shadow-2xl transition-all">
-        {/* Header Modal */}
-        <div className="mb-6 flex items-start justify-between border-b border-[#f0e8e4] pb-4">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/55 p-3 sm:p-4 md:p-6 overflow-y-auto backdrop-blur-xs">
+      <div className="relative my-auto w-full max-w-[640px] max-h-[92vh] sm:max-h-[88vh] flex flex-col rounded-2xl sm:rounded-3xl bg-white text-[#151211] shadow-2xl transition-all">
+        {/* Header Modal - Fixed Top */}
+        <div className="flex shrink-0 items-center justify-between border-b border-[#f0e8e4] px-5 py-4 sm:px-7 sm:py-5">
           <div>
-            <h2 className="text-xl font-bold text-[#1f1b1a]">
+            <h2 className="text-lg sm:text-xl font-bold text-[#1f1b1a]">
               {initialData ? 'Edit Data Inspeksi' : 'Tambah Data Inspeksi'}
             </h2>
-            <p className="mt-1 text-sm text-[#6f625f]">
-              Isi detail inspeksi APAR dan sertakan foto bukti pengecekan fisik.
+            <p className="mt-0.5 text-xs sm:text-sm text-[#6f625f]">
+              Lengkapi detail inspeksi APAR & bukti foto pengecekan.
             </p>
           </div>
 
           <button
             type="button"
             onClick={handleClose}
-            className="rounded-full p-2 text-[#6f625f] transition hover:bg-[#f5eeee] hover:text-[#e95345]"
+            className="rounded-full p-2 text-[#6f625f] transition hover:bg-[#f5eeee] hover:text-[#e95345] active:scale-95"
+            aria-label="Tutup"
           >
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-5">
+        {/* Scrollable Form Body */}
+        <form onSubmit={handleSubmit} className="flex flex-col overflow-y-auto">
+          <div className="space-y-4 sm:space-y-5 p-5 sm:p-7">
             {/* Input APAR & Tanggal */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3.5 sm:gap-4.5 sm:grid-cols-2">
               <div>
                 <label className={labelClass}>
                   APAR <span className="text-[#e95345]">*</span>
@@ -341,7 +371,7 @@ export default function InspeksiModal({
             </div>
 
             {/* Input Tekanan & Hasil */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3.5 sm:gap-4.5 sm:grid-cols-2">
               <div>
                 <label className={labelClass}>
                   Kondisi Tekanan <span className="text-[#e95345]">*</span>
@@ -383,16 +413,16 @@ export default function InspeksiModal({
               </div>
             </div>
 
-            {/* SECTION UPLOAD / AMBIL FOTO GABUNGAN */}
-            <div className="rounded-2xl border border-[#eadfdb] bg-[#faf8f7] p-4.5">
-              <div className="mb-3 flex items-center justify-between">
-                <label className="text-sm font-bold text-[#151211] flex items-center gap-1.5">
+            {/* SECTION UPLOAD / AMBIL FOTO FLEKSIBEL */}
+            <div className="rounded-2xl border border-[#eadfdb] bg-[#faf8f7] p-3.5 sm:p-4.5">
+              <div className="mb-2.5 flex items-center justify-between flex-wrap gap-2">
+                <label className="text-xs sm:text-sm font-bold text-[#151211] flex items-center gap-1.5">
                   <ImageIcon size={18} className="text-[#e95345]" />
                   Foto Bukti Inspeksi <span className="text-[#e95345]">* (Wajib)</span>
                 </label>
 
                 {form.foto && (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#00a862] bg-[#e7f8ef] px-2.5 py-1 rounded-full border border-[#00a862]/20">
+                  <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-[#00a862] bg-[#e7f8ef] px-2.5 py-1 rounded-full border border-[#00a862]/20">
                     <CheckCircle2 size={13} /> Foto Terlampir
                   </span>
                 )}
@@ -422,38 +452,47 @@ export default function InspeksiModal({
                     ref={videoRef}
                     autoPlay
                     playsInline
-                    className="w-full h-56 object-cover"
+                    className="w-full h-48 sm:h-64 object-cover"
                   />
 
                   {cameraLoading && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-sm">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-xs sm:text-sm">
                       <RefreshCw size={24} className="animate-spin text-[#e95345] mb-2" />
                       Memuat Kamera...
                     </div>
                   )}
 
-                  <div className="absolute bottom-3 inset-x-3 flex items-center justify-between bg-black/60 backdrop-blur-md p-2 rounded-xl">
+                  <div className="absolute bottom-2.5 inset-x-2.5 flex items-center justify-between bg-black/60 backdrop-blur-md p-2 rounded-xl gap-2">
                     <button
                       type="button"
                       onClick={stopCameraStream}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition active:scale-95"
                     >
-                      <CameraOff size={14} /> Batal
+                      <CameraOff size={14} /> <span className="hidden sm:inline">Batal</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={toggleCameraFacing}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition active:scale-95"
+                      title="Putar Kamera"
+                    >
+                      <SwitchCamera size={14} /> <span className="hidden sm:inline">Putar Kamera</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={captureFromVideo}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#e95345] hover:bg-[#d9473a] px-4 py-2 rounded-lg shadow-md transition"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#e95345] hover:bg-[#d9473a] px-3.5 py-2 rounded-lg shadow-md transition active:scale-95"
                     >
-                      <Camera size={16} /> Ambil Foto Sekarang
+                      <Camera size={16} /> Ambil Foto
                     </button>
                   </div>
                 </div>
               ) : form.foto ? (
                 /* Mode Preview Gambar Terlampir */
-                <div className="relative flex flex-col sm:flex-row items-center gap-4 rounded-xl border border-[#eadfdb] bg-white p-3 shadow-xs">
-                  <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg border border-[#eadfdb] bg-gray-100">
+                <div className="relative flex flex-col sm:flex-row items-center gap-3.5 sm:gap-4 rounded-xl border border-[#eadfdb] bg-white p-3 shadow-2xs">
+                  <div className="relative h-32 w-full sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-lg border border-[#eadfdb] bg-gray-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={form.foto}
@@ -462,9 +501,11 @@ export default function InspeksiModal({
                     />
                   </div>
 
-                  <div className="flex-1 text-center sm:text-left">
-                    <p className="text-xs font-bold text-[#151211]">Bukti Inspeksi Terpasang</p>
-                    <p className="mt-0.5 text-xs text-[#6f625f]">
+                  <div className="flex-1 text-center sm:text-left w-full">
+                    <p className="text-xs font-bold text-[#151211] flex items-center justify-center sm:justify-start gap-1">
+                      <FileCheck size={14} className="text-[#00a862]" /> Bukti Inspeksi Terpasang
+                    </p>
+                    <p className="mt-0.5 text-[11px] sm:text-xs text-[#6f625f]">
                       Gambar siap dikirim sebagai dokumentasi bukti pengecekan fisik.
                     </p>
 
@@ -472,23 +513,23 @@ export default function InspeksiModal({
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="inline-flex items-center gap-1 rounded-lg border border-[#eadfdb] bg-white px-3 py-1.5 text-xs font-bold text-[#1f1b1a] shadow-2xs transition hover:bg-[#fff5f3] hover:text-[#e95345]"
+                        className="inline-flex items-center gap-1 rounded-lg border border-[#eadfdb] bg-white px-3 py-1.5 text-xs font-bold text-[#1f1b1a] shadow-2xs transition hover:bg-[#fff5f3] hover:text-[#e95345] active:scale-95"
                       >
                         <Upload size={14} /> Ganti File
                       </button>
 
                       <button
                         type="button"
-                        onClick={startLiveCamera}
-                        className="inline-flex items-center gap-1 rounded-lg border border-[#eadfdb] bg-white px-3 py-1.5 text-xs font-bold text-[#1f1b1a] shadow-2xs transition hover:bg-[#fff5f3] hover:text-[#e95345]"
+                        onClick={() => startLiveCamera()}
+                        className="inline-flex items-center gap-1 rounded-lg border border-[#eadfdb] bg-white px-3 py-1.5 text-xs font-bold text-[#1f1b1a] shadow-2xs transition hover:bg-[#fff5f3] hover:text-[#e95345] active:scale-95"
                       >
-                        <Camera size={14} /> Ambil Ulang Kamera
+                        <Camera size={14} /> Ambil Kamera
                       </button>
 
                       <button
                         type="button"
                         onClick={handleRemovePhoto}
-                        className="inline-flex items-center gap-1 rounded-lg bg-[#fee9e6] px-3 py-1.5 text-xs font-bold text-[#e95345] transition hover:bg-[#fbd8d4]"
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#fee9e6] px-3 py-1.5 text-xs font-bold text-[#e95345] transition hover:bg-[#fbd8d4] active:scale-95"
                       >
                         <Trash2 size={14} /> Hapus
                       </button>
@@ -496,38 +537,43 @@ export default function InspeksiModal({
                   </div>
                 </div>
               ) : (
-                /* Mode Opsi Upload & Kamera */
+                /* Mode Dropzone Fleksibel untuk Desktop & Android */
                 <div
-                  className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition ${
-                    fotoError
-                      ? 'border-[#e95345] bg-[#fff5f3]'
-                      : 'border-[#dfd6d2] bg-white hover:border-[#e95345]/50'
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-4 sm:p-6 text-center transition ${
+                    isDragging
+                      ? 'border-[#e95345] bg-[#fff5f3] scale-[1.01]'
+                      : fotoError
+                        ? 'border-[#e95345] bg-[#fff5f3]'
+                        : 'border-[#dfd6d2] bg-white hover:border-[#e95345]/50'
                   }`}
                 >
-                  <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#fef2f1] text-[#e95345]">
-                    <Camera size={24} />
+                  <div className="mb-2 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[#fef2f1] text-[#e95345]">
+                    <Camera size={22} className="sm:w-6 sm:h-6" />
                   </div>
 
-                  <p className="text-sm font-bold text-[#151211]">
+                  <p className="text-xs sm:text-sm font-bold text-[#151211]">
                     Unggah atau Ambil Foto Bukti APAR
                   </p>
-                  <p className="mt-1 text-xs text-[#6f625f] max-w-sm">
-                    Ambil foto langsung dari kamera HP/laptop saat inspeksi berlangsung, atau pilih file foto dari galeri.
+                  <p className="mt-1 text-[11px] sm:text-xs text-[#6f625f] max-w-sm">
+                    Drag & drop foto di sini, pilih dari galeri, atau ambil foto langsung dari kamera HP/laptop.
                   </p>
 
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                  <div className="mt-3.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 w-full sm:w-auto">
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#eadfdb] bg-white px-4 py-2.5 text-xs font-bold text-[#1f1b1a] shadow-sm transition hover:border-[#e95345] hover:text-[#e95345]"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#eadfdb] bg-white px-4 py-2.5 text-xs font-bold text-[#1f1b1a] shadow-xs transition hover:border-[#e95345] hover:text-[#e95345] active:scale-95"
                     >
                       <Upload size={15} /> Upload dari File
                     </button>
 
                     <button
                       type="button"
-                      onClick={startLiveCamera}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#e95345] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#d9473a]"
+                      onClick={() => startLiveCamera()}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#e95345] px-4 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-[#d9473a] active:scale-95"
                     >
                       <Camera size={15} /> Ambil Foto Kamera
                     </button>
@@ -553,17 +599,17 @@ export default function InspeksiModal({
                 onChange={handleChange}
                 placeholder="Contoh: Tekanan aman, kondisi fisik baik, segel pengaman terpasang rapi"
                 rows={3}
-                className="w-full resize-none rounded-xl border border-[#eadfdb] bg-white px-4 py-3 text-sm font-semibold text-[#151211] outline-none transition placeholder:text-[#8f817d] focus:border-[#e95345] focus:ring-2 focus:ring-[#f6b7af]"
+                className="w-full resize-none rounded-xl border border-[#eadfdb] bg-white px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-[#151211] outline-none transition placeholder:text-[#8f817d] focus:border-[#e95345] focus:ring-2 focus:ring-[#f6b7af]"
               />
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="mt-8 flex justify-end gap-3 border-t border-[#f0e8e4] pt-4">
+          {/* Footer Actions - Fixed Bottom inside scroll box */}
+          <div className="shrink-0 flex items-center justify-end gap-2.5 sm:gap-3 border-t border-[#f0e8e4] bg-[#faf8f7] px-5 py-3.5 sm:px-7 sm:py-4">
             <button
               type="button"
               onClick={handleClose}
-              className="rounded-xl border border-[#eadfdb] bg-white px-5 py-3 text-sm font-bold text-[#1f1b1a] transition hover:bg-[#fbf7f5]"
+              className="rounded-xl border border-[#eadfdb] bg-white px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-[#1f1b1a] transition hover:bg-[#fbf7f5] active:scale-95"
             >
               Batal
             </button>
@@ -571,7 +617,7 @@ export default function InspeksiModal({
             <button
               type="submit"
               disabled={loadingSubmit}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#e95345] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#d9473a] disabled:cursor-not-allowed disabled:opacity-70 shadow-sm"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#e95345] px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white transition hover:bg-[#d9473a] disabled:cursor-not-allowed disabled:opacity-70 shadow-xs active:scale-95"
             >
               {loadingSubmit && <RefreshCw size={16} className="animate-spin" />}
               {loadingSubmit
@@ -586,3 +632,4 @@ export default function InspeksiModal({
     </div>
   );
 }
+

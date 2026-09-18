@@ -404,56 +404,57 @@ export default function InspeksiPage() {
 
       {/* Modal Lightbox Preview Foto Ukuran Penuh */}
       {previewPhotoItem && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs animate-fadeIn">
-          <div className="relative w-full max-w-2xl rounded-3xl bg-white overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#1a1d27] border border-[#eadfdb] dark:border-white/10 overflow-hidden shadow-2xl transition-all">
             {/* Header Preview */}
-            <div className="flex items-center justify-between border-b border-[#eadfdb] bg-[#faf8f7] px-6 py-4">
+            <div className="flex items-center justify-between border-b border-[#eadfdb] dark:border-white/10 bg-[#faf8f7] dark:bg-[#161822] px-5 py-3.5 sm:px-6 sm:py-4">
               <div>
-                <h3 className="font-bold text-[#1f1b1a] text-lg">
+                <h3 className="font-bold text-[#1f1b1a] dark:text-white text-base sm:text-lg">
                   Dokumentasi Foto Bukti Inspeksi
                 </h3>
-                <p className="text-xs text-[#6f625f] mt-0.5">
+                <p className="text-xs text-[#6f625f] dark:text-[#94a3b8] mt-0.5">
                   {previewPhotoItem.kode_apar} &bull; {previewPhotoItem.lokasi || 'Lokasi N/A'}
                 </p>
               </div>
 
               <button
                 onClick={() => setPreviewPhotoItem(null)}
-                className="rounded-full p-2 text-[#6f625f] transition hover:bg-[#fee9e6] hover:text-[#e95345]"
+                className="rounded-full p-2 text-[#6f625f] dark:text-[#94a3b8] transition hover:bg-[#fee9e6] dark:hover:bg-[#e95345]/20 hover:text-[#e95345] dark:hover:text-[#ff7a6d]"
+                aria-label="Tutup Preview"
               >
                 <X size={20} />
               </button>
             </div>
 
             {/* Body Preview Gambar */}
-            <div className="p-6 flex flex-col items-center justify-center bg-gray-950/95 min-h-[320px]">
+            <div className="p-4 sm:p-6 flex flex-col items-center justify-center bg-gray-950/95 dark:bg-black/90 min-h-[300px] sm:min-h-[360px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewPhotoItem.foto}
                 alt={`Bukti ${previewPhotoItem.kode_apar}`}
-                className="max-h-[60vh] w-auto max-w-full rounded-xl object-contain shadow-md"
+                className="max-h-[55vh] sm:max-h-[60vh] w-auto max-w-full rounded-xl object-contain shadow-md"
               />
             </div>
 
             {/* Footer Detail Information */}
-            <div className="grid grid-cols-3 border-t border-[#eadfdb] bg-white p-4 text-center text-xs divide-x divide-[#eadfdb]">
+            <div className="grid grid-cols-3 border-t border-[#eadfdb] dark:border-white/10 bg-white dark:bg-[#1a1d27] p-3.5 sm:p-4 text-center text-xs divide-x divide-[#eadfdb] dark:divide-white/10">
               <div>
-                <span className="block text-[#8f817d]">Tanggal</span>
-                <span className="font-bold text-[#151211] mt-0.5 block">
+                <span className="block text-[#8f817d] dark:text-[#94a3b8]">Tanggal</span>
+                <span className="font-bold text-[#151211] dark:text-white mt-0.5 block text-xs sm:text-sm">
                   {formatTanggal(previewPhotoItem.tanggal_inspeksi)}
                 </span>
               </div>
 
               <div>
-                <span className="block text-[#8f817d]">Kondisi Tekanan</span>
-                <span className="font-bold text-[#151211] mt-0.5 block capitalize">
+                <span className="block text-[#8f817d] dark:text-[#94a3b8]">Kondisi Tekanan</span>
+                <span className="font-bold text-[#151211] dark:text-white mt-0.5 block capitalize text-xs sm:text-sm">
                   {previewPhotoItem.kondisi_tekanan || '-'}
                 </span>
               </div>
 
               <div>
-                <span className="block text-[#8f817d]">Hasil Inspeksi</span>
-                <span className="font-bold text-[#e95345] mt-0.5 block capitalize">
+                <span className="block text-[#8f817d] dark:text-[#94a3b8]">Hasil Inspeksi</span>
+                <span className="font-bold text-[#e95345] dark:text-[#ff7a6d] mt-0.5 block capitalize text-xs sm:text-sm">
                   {previewPhotoItem.hasil || '-'}
                 </span>
               </div>
