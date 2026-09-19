@@ -22,8 +22,16 @@ exports.createApar = (req, res) => {
 
     DataApar.create(data, (err, result) => {
         if (err) {
+            let errorMsg = 'Gagal menambahkan data APAR';
+            if (err.code === 'ER_DUP_ENTRY') {
+                errorMsg = `Kode APAR "${data.kode_apar}" sudah terdaftar dalam sistem. Gunakan kode lain.`;
+                return res.status(400).json({ message: errorMsg, error: err });
+            }
+            if (err.sqlMessage) {
+                errorMsg = `Gagal menambahkan data APAR: ${err.sqlMessage}`;
+            }
             return res.status(500).json({
-                message: 'Gagal menambahkan data APAR',
+                message: errorMsg,
                 error: err
             });
         }

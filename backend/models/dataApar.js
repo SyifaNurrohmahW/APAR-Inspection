@@ -29,6 +29,12 @@ const DataApar = {
             console.error('Gagal memperbarui tipe kolom berat pada ms_apar:', alterErr);
           }
         });
+        // Pastikan kolom jenis bertipe VARCHAR(100) agar mendukung variasi jenis bahan master (seperti AFFF Foam)
+        db.query('ALTER TABLE ms_apar MODIFY COLUMN jenis VARCHAR(100) NOT NULL', (alterErr) => {
+          if (alterErr) {
+            console.error('Gagal memperbarui tipe kolom jenis pada ms_apar:', alterErr);
+          }
+        });
       }
       if (callback) callback(err, res);
     });
