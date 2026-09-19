@@ -195,14 +195,14 @@ export default function MasterJenisBahanPage() {
           <div className="relative w-full sm:w-72">
             <Search
               size={18}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#b5a7a2]"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#b5a7a2] dark:text-[#94a3b8]"
             />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Cari jenis bahan..."
-              className="h-10 w-full rounded-xl border border-[#eadfdb] bg-[#fffaf8] dark:bg-[#161822] dark:focus:bg-[#161822] pl-10 pr-4 text-sm outline-none transition focus:border-[#e95345] focus:bg-white"
+              className="h-10 w-full rounded-xl border border-[#eadfdb] dark:border-white/10 bg-white dark:bg-[#161822] text-[#1f1b1a] dark:text-white placeholder:text-[#b5a7a2] dark:placeholder:text-[#94a3b8] pl-10 pr-4 text-sm outline-none transition focus:border-[#e95345] focus:ring-2 focus:ring-[#e95345]/20"
             />
           </div>
         </div>
