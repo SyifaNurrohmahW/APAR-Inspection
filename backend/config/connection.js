@@ -9,20 +9,27 @@ const port = process.env.DB_PORT || process.env.MYSQLPORT ? Number(process.env.D
 
 console.log('Connecting to Database host:', host, 'port:', port, 'user:', user, 'database:', database);
 
-const connection = db.createConnection({
+const pool = db.createPool({
     host: host,
     user: user,
     password: password,
     database: database,
-    port: port
+    port: port,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 10000
 });
 
-connection.connect((err) => {
+// Tes koneksi saat pertama kali diinisialisasi
+pool.getConnection((err, connection) => {
     if (err) {
-        console.error('Error connecting to the database:', err);
+        console.error('Error connecting to the database pool:', err);
         return;
     }
-    console.log('Connected to the database!');
+    console.log('Connected to the database pool successfully!');
+    connection.release();
 });
 
-module.exports = connection;
+module.exports = pool;
