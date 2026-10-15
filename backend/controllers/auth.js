@@ -13,13 +13,14 @@ exports.login = (req, res) => {
 
   Auth.getUserByEmail(email, async (err, results) => {
     if (err) {
+      console.error('Error getUserByEmail:', err);
       return res.status(500).json({
-        message: 'Gagal login',
-        error: err
+        message: 'Gagal login: koneksi database bermasalah',
+        error: err.message || err
       });
     }
 
-    if (results.length === 0) {
+    if (!results || results.length === 0) {
       return res.status(401).json({
         message: 'Email atau password salah'
       });
@@ -44,6 +45,7 @@ exports.login = (req, res) => {
         });
       }
 
+      const jwtSecret = process.env.JWT_SECRET || 'inspection_apar_system2026_management_secret_key123';
       const token = jwt.sign(
         {
           id_users: user.id_users,
@@ -53,7 +55,7 @@ exports.login = (req, res) => {
           email: user.email,
           role: normalizedRole
         },
-        process.env.JWT_SECRET,
+        jwtSecret,
         {
           expiresIn: process.env.JWT_EXPIRES_IN || '1h'
         }
@@ -75,9 +77,10 @@ exports.login = (req, res) => {
         }
       });
     } catch (error) {
+      console.error('Error saat login:', error);
       res.status(500).json({
         message: 'Terjadi kesalahan saat login',
-        error
+        error: error.message || error
       });
     }
   });

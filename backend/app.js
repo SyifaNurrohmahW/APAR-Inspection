@@ -75,6 +75,9 @@ const LokasiModel = require('./models/lokasi');
 const DataAparModel = require('./models/dataApar');
 const JenisBahanModel = require('./models/jenisBahan');
 const InspeksiModel = require('./models/inspeksi');
+const PengisianUlangModel = require('./models/pengisianUlang');
+const RiwayatModel = require('./models/riwayat');
+const NotifikasiModel = require('./models/notifikasi');
 
 KapalModel.initTable();
 DataPenggunaModel.initTable();
@@ -82,6 +85,9 @@ LokasiModel.initTable();
 DataAparModel.initTable();
 JenisBahanModel.initTable();
 InspeksiModel.initTable();
+PengisianUlangModel.initTable();
+RiwayatModel.initTable();
+NotifikasiModel.initTable();
 
 if (require.main === module) {
   app.listen(port, '0.0.0.0', () => {
