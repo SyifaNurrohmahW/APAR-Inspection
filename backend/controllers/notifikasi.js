@@ -3,6 +3,7 @@ const { runWhatsappExpiryReminders } = require('../services/whatsappReminder');
 
 exports.getAllNotifikasi = (req, res) => {
   const id_users = req.user?.id_users;
+  const role = String(req.user?.role || '').trim().toLowerCase();
 
   if (!id_users) {
     return res.status(401).json({
@@ -18,14 +19,7 @@ exports.getAllNotifikasi = (req, res) => {
       });
     }
 
-    runWhatsappExpiryReminders((waErr) => {
-      if (waErr) {
-        return res.status(500).json({
-          message: 'Gagal mengirim pengingat WhatsApp',
-          error: waErr
-        });
-      }
-
+    const fetchUserNotifications = () => {
       Notifikasi.getByUserId(id_users, (err, results) => {
         if (err) {
           return res.status(500).json({
@@ -39,7 +33,16 @@ exports.getAllNotifikasi = (req, res) => {
           data: results
         });
       });
-    });
+    };
+
+    // Hanya picu pengiriman pengingat WhatsApp jika diakses oleh superadmin
+    if (role === 'superadmin') {
+      runWhatsappExpiryReminders(() => {
+        fetchUserNotifications();
+      });
+    } else {
+      fetchUserNotifications();
+    }
   });
 };
 
