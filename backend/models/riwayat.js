@@ -2,6 +2,27 @@ const db = require('../config/connection');
 const buildPartialUpdate = require('../helpers/partialUpdate');
 
 const Riwayat = {
+  // Inisialisasi tabel tr_riwayat jika belum ada
+  initTable: (callback) => {
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS tr_riwayat (
+        id_riwayat INT AUTO_INCREMENT PRIMARY KEY,
+        id_users INT NULL,
+        id_inspeksi INT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+    db.query(createTableQuery, (err, res) => {
+      if (err) {
+        console.error('Gagal membuat/memverifikasi tabel tr_riwayat:', err);
+      } else {
+        console.log('Tabel tr_riwayat terverifikasi/siap.');
+      }
+      if (callback) callback(err, res);
+    });
+  },
+
   // Ambil semua riwayat (opsional filter id_kapal)
   getAll: (id_kapal_filter, callback) => {
     if (typeof id_kapal_filter === 'function') {

@@ -23,6 +23,31 @@ const syncAparExpiry = (id_apar, tanggal_kadaluwarsa, callback) => {
 };
 
 const PengisianUlang = {
+  // Inisialisasi tabel tr_return jika belum ada
+  initTable: (callback) => {
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS tr_return (
+        id_return INT AUTO_INCREMENT PRIMARY KEY,
+        id_apar INT NOT NULL,
+        tanggal DATE NOT NULL,
+        tanggal_kadaluwarsa DATE NOT NULL,
+        nama_vendor VARCHAR(150),
+        biaya DECIMAL(15, 2) DEFAULT 0,
+        catatan TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+    db.query(createTableQuery, (err, res) => {
+      if (err) {
+        console.error('Gagal membuat/memverifikasi tabel tr_return:', err);
+      } else {
+        console.log('Tabel tr_return terverifikasi/siap.');
+      }
+      if (callback) callback(err, res);
+    });
+  },
+
   // Ambil semua data pengisian ulang (opsional filter id_kapal)
   getAll: (id_kapal_filter, callback) => {
     if (typeof id_kapal_filter === 'function') {

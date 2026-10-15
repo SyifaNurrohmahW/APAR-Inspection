@@ -70,6 +70,37 @@ const notificationSelect = `
 `;
 
 const Notifikasi = {
+  // Inisialisasi tabel tr_notifikasi jika belum ada
+  initTable: (callback) => {
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS tr_notifikasi (
+        id_notifikasi INT AUTO_INCREMENT PRIMARY KEY,
+        id_apar INT NULL,
+        id_users INT NULL,
+        id_riwayat INT NULL,
+        tanggal_kadaluwarsa DATE NULL,
+        jenis_notifikasi VARCHAR(100),
+        pesan TEXT,
+        tingkat VARCHAR(50) DEFAULT 'info',
+        dibaca TINYINT(1) DEFAULT 0,
+        dihapus TINYINT(1) DEFAULT 0,
+        wa_sent_at DATETIME NULL,
+        wa_status VARCHAR(50) NULL,
+        wa_response TEXT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+    db.query(createTableQuery, (err, res) => {
+      if (err) {
+        console.error('Gagal membuat/memverifikasi tabel tr_notifikasi:', err);
+      } else {
+        console.log('Tabel tr_notifikasi terverifikasi/siap.');
+      }
+      if (callback) callback(err, res);
+    });
+  },
+
   // Ambil semua notifikasi
   getAll: (callback) => {
     const query = `
