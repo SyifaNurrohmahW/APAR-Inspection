@@ -62,9 +62,11 @@ export default function RiwayatPage() {
     };
 
     loadRiwayat();
+    window.addEventListener('apar-ship-changed', loadRiwayat);
 
     return () => {
       isMounted = false;
+      window.removeEventListener('apar-ship-changed', loadRiwayat);
     };
   }, []);
 

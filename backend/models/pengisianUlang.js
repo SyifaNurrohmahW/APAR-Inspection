@@ -23,22 +23,43 @@ const syncAparExpiry = (id_apar, tanggal_kadaluwarsa, callback) => {
 };
 
 const PengisianUlang = {
-  // Ambil semua data pengisian ulang
-  getAll: (callback) => {
-    const query = `
-      SELECT *
+  // Ambil semua data pengisian ulang (opsional filter id_kapal)
+  getAll: (id_kapal_filter, callback) => {
+    if (typeof id_kapal_filter === 'function') {
+      callback = id_kapal_filter;
+      id_kapal_filter = null;
+    }
+
+    let query = `
+      SELECT 
+        tr_return.*,
+        ms_apar.kode_apar,
+        ms_apar.jenis,
+        ms_apar.berat,
+        ms_apar.id_kapal,
+        ms_lokasi.lokasi,
+        ms_kapal.nama_kapal
       FROM tr_return
       LEFT JOIN ms_apar 
         ON tr_return.id_apar = ms_apar.id_apar
       LEFT JOIN ms_lokasi
         ON ms_apar.id_lokasi = ms_lokasi.id_lokasi
-      ORDER BY tr_return.id_return DESC
+      LEFT JOIN ms_kapal
+        ON ms_apar.id_kapal = ms_kapal.id_kapal
     `;
 
-    db.query(query, callback);
+    const values = [];
+    if (id_kapal_filter) {
+      query += ` WHERE ms_apar.id_kapal = ?`;
+      values.push(id_kapal_filter);
+    }
+
+    query += ` ORDER BY tr_return.id_return DESC`;
+
+    db.query(query, values, callback);
   },
 
-  // Ambil data pengisian ulng berdasarkan ID
+  // Ambil data pengisian ulang berdasarkan ID
   getById: (id_return, callback) => {
     const query = `
       SELECT 
@@ -47,7 +68,9 @@ const PengisianUlang = {
         ms_apar.kode_apar,
         ms_apar.jenis,
         ms_apar.berat,
+        ms_apar.id_kapal,
         ms_lokasi.lokasi,
+        ms_kapal.nama_kapal,
         tr_return.tanggal,
         tr_return.tanggal_kadaluwarsa,
         tr_return.nama_vendor,
@@ -60,6 +83,8 @@ const PengisianUlang = {
         ON tr_return.id_apar = ms_apar.id_apar
       LEFT JOIN ms_lokasi
         ON ms_apar.id_lokasi = ms_lokasi.id_lokasi
+      LEFT JOIN ms_kapal
+        ON ms_apar.id_kapal = ms_kapal.id_kapal
       WHERE tr_return.id_return = ?
     `;
 

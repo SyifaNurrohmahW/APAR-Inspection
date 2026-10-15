@@ -60,12 +60,11 @@ export default function InspeksiPage() {
   };
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      fetchInspeksi();
-    }, 0);
+    fetchInspeksi();
+    window.addEventListener('apar-ship-changed', fetchInspeksi);
 
     return () => {
-      window.clearTimeout(timer);
+      window.removeEventListener('apar-ship-changed', fetchInspeksi);
     };
   }, []);
 

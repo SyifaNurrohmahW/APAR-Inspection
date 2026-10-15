@@ -1,9 +1,11 @@
 const Inspeksi = require('../models/inspeksi');
 const Riwayat = require('../models/riwayat');
 const Notifikasi = require('../models/notifikasi');
+const getShipFilter = require('../helpers/shipFilter');
 
 exports.getAllInspeksi = (req, res) => {
-  Inspeksi.getAll((err, results) => {
+  const shipFilter = getShipFilter(req);
+  Inspeksi.getAll(shipFilter, (err, results) => {
     if (err) {
       return res.status(500).json({
         message: 'Gagal mengambil data inspeksi',

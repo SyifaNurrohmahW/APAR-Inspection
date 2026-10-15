@@ -185,9 +185,11 @@ function DataAparContent() {
     };
 
     loadDataApar();
+    window.addEventListener('apar-ship-changed', loadDataApar);
 
     return () => {
       isMounted = false;
+      window.removeEventListener('apar-ship-changed', loadDataApar);
     };
   }, []);
 

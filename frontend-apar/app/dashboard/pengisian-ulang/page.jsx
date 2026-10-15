@@ -190,9 +190,11 @@ export default function PengisianUlangPage() {
     };
 
     loadPengisianUlang();
+    window.addEventListener('apar-ship-changed', loadPengisianUlang);
 
     return () => {
       isMounted = false;
+      window.removeEventListener('apar-ship-changed', loadPengisianUlang);
     };
   }, []);
 

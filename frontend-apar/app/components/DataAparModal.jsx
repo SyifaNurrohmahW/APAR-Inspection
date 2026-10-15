@@ -39,7 +39,6 @@ const getInitialForm = (initialData) => {
   };
 };
 
-const defaultJenisOptions = ['Dry Chemical Powder', 'CO2', 'Foam', 'Water', 'Clean Agent'];
 const statusOptions = ['Baik', 'Akan Kedaluwarsa', 'Kedaluwarsa'];
 
 export default function DataAparModal({
@@ -143,12 +142,11 @@ export default function DataAparModal({
     }
   };
 
-  // Gunakan master DB jenis bahan jika tersedia. Hanya pakai default jika DB master belum memiliki data.
-  const masterJenisNames = jenisBahanOptions.map((item) => item.nama_bahan);
-  const combinedJenisOptions =
-    masterJenisNames.length > 0
-      ? Array.from(new Set([...masterJenisNames, formData.jenis].filter(Boolean)))
-      : Array.from(new Set([...defaultJenisOptions, formData.jenis].filter(Boolean)));
+  // Mengambil opsi jenis bahan murni dari Master Jenis Bahan yang sudah diisi oleh Superadmin di database
+  const masterJenisNames = jenisBahanOptions.map((item) => item.nama_bahan).filter(Boolean);
+  const combinedJenisOptions = Array.from(
+    new Set([...masterJenisNames, formData.jenis].filter(Boolean))
+  );
 
 
   const inputClass =

@@ -10,15 +10,19 @@ import {
   User,
   LogOut,
   ChevronDown,
-  Menu
+  Menu,
+  Ship
 } from 'lucide-react';
 
 import { getAllNotifikasi } from '@/services/notifikasiService';
 import { showConfirm } from '@/utils/feedback';
 import { clearAuthState } from '@/utils/authState';
+import { getActiveShip } from '@/services/api';
+import KapalDropdown from '@/components/KapalDropdown';
 
 const NOTIFICATION_READ_EVENT = 'apar-notification-read';
 const USER_UPDATED_EVENT = 'apar-user-updated';
+const SHIP_CHANGED_EVENT = 'apar-ship-changed';
 
 const getInitials = (name = 'Pengguna') => {
   return name
@@ -32,6 +36,8 @@ const getInitials = (name = 'Pengguna') => {
 
 export default function Navbar({ onMenuToggle }) {
   const [openProfile, setOpenProfile] = useState(false);
+  const [openKapalDropdown, setOpenKapalDropdown] = useState(false);
+  const [activeShip, setActiveShipState] = useState({ id: 'all', nama: 'Semua Kapal' });
   const [notificationCount, setNotificationCount] = useState(0);
   const [theme, setTheme] = useState('light');
   const [searchQuery, setSearchQuery] = useState('');
@@ -113,19 +119,29 @@ export default function Navbar({ onMenuToggle }) {
       }
     };
 
+    const syncActiveShip = () => {
+      setActiveShipState(getActiveShip());
+    };
+
     loadNotificationCount();
+    syncActiveShip();
     window.addEventListener(NOTIFICATION_READ_EVENT, loadNotificationCount);
     window.addEventListener(USER_UPDATED_EVENT, syncStoredUser);
+    window.addEventListener(USER_UPDATED_EVENT, syncActiveShip);
+    window.addEventListener(SHIP_CHANGED_EVENT, syncActiveShip);
 
     return () => {
       isMounted = false;
       window.removeEventListener(NOTIFICATION_READ_EVENT, loadNotificationCount);
       window.removeEventListener(USER_UPDATED_EVENT, syncStoredUser);
+      window.removeEventListener(USER_UPDATED_EVENT, syncActiveShip);
+      window.removeEventListener(SHIP_CHANGED_EVENT, syncActiveShip);
     };
   }, []);
 
   const handleToggleProfile = () => {
     syncStoredUser();
+    setOpenKapalDropdown(false);
     setOpenProfile((currentValue) => !currentValue);
   };
 
@@ -215,6 +231,49 @@ export default function Navbar({ onMenuToggle }) {
               </>
             )}
           </button>
+
+          <div className="relative">
+            <button
+              onClick={() => {
+                syncStoredUser();
+                setOpenKapalDropdown((prev) => !prev);
+                setOpenProfile(false);
+              }}
+              type="button"
+              className={`flex h-11 items-center gap-2 rounded-xl border border-[#eadfdb] bg-white px-2.5 py-1.5 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#f5c6bf] hover:bg-[#fee9e6] hover:shadow-md sm:px-3 sm:py-2 dark:bg-[#1a1d27] dark:border-white/10 dark:hover:bg-white/10 ${
+                openKapalDropdown ? 'ring-2 ring-[#e95345]/30 border-[#e95345]' : ''
+              }`}
+              aria-expanded={openKapalDropdown}
+              aria-label="Pilih Kapal Inspeksi"
+              title={`Kapal Aktif: ${activeShip.nama}`}
+            >
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#fee9e6] text-[#e95345] dark:bg-[#e95345]/15 dark:text-[#ff7a6d]">
+                <Ship size={16} />
+              </div>
+
+              <div className="hidden flex-col text-left sm:flex">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7c78] dark:text-[#94a3b8] leading-tight">
+                  Kapal Aktif
+                </span>
+                <span className="truncate max-w-[90px] md:max-w-[125px] lg:max-w-[170px] text-xs font-bold text-[#1f1b1a] dark:text-[#f8fafc] leading-tight">
+                  {activeShip.nama}
+                </span>
+              </div>
+
+              <ChevronDown
+                size={14}
+                className={`text-[#8c7c78] dark:text-[#94a3b8] transition-transform duration-200 ${
+                  openKapalDropdown ? 'rotate-180 text-[#e95345]' : ''
+                }`}
+              />
+            </button>
+
+            <KapalDropdown
+              isOpen={openKapalDropdown}
+              onClose={() => setOpenKapalDropdown(false)}
+              activeShip={activeShip}
+            />
+          </div>
 
           <div className="relative">
             <button

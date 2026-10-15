@@ -39,25 +39,41 @@ const Inspeksi = {
     });
   },
 
-  // Ambil semua data inspeksi
-  getAll: (callback) => {
-    const query = `
+  // Ambil semua data inspeksi (opsional filter id_kapal)
+  getAll: (id_kapal_filter, callback) => {
+    if (typeof id_kapal_filter === 'function') {
+      callback = id_kapal_filter;
+      id_kapal_filter = null;
+    }
+
+    let query = `
       SELECT 
         tr_inspeksi.*,
         ms_apar.kode_apar,
         ms_apar.jenis,
         ms_apar.berat,
         ms_apar.status AS status_apar,
-        ms_lokasi.lokasi
+        ms_apar.id_kapal,
+        ms_lokasi.lokasi,
+        ms_kapal.nama_kapal
       FROM tr_inspeksi
       LEFT JOIN ms_apar 
         ON tr_inspeksi.id_apar = ms_apar.id_apar
       LEFT JOIN ms_lokasi
         ON ms_apar.id_lokasi = ms_lokasi.id_lokasi
-      ORDER BY tr_inspeksi.id_inspeksi DESC
+      LEFT JOIN ms_kapal
+        ON ms_apar.id_kapal = ms_kapal.id_kapal
     `;
 
-    db.query(query, callback);
+    const values = [];
+    if (id_kapal_filter) {
+      query += ` WHERE ms_apar.id_kapal = ?`;
+      values.push(id_kapal_filter);
+    }
+
+    query += ` ORDER BY tr_inspeksi.id_inspeksi DESC`;
+
+    db.query(query, values, callback);
   },
 
   // Ambil inspeksi berdasarkan ID
@@ -70,7 +86,9 @@ const Inspeksi = {
         ms_apar.jenis,
         ms_apar.berat,
         ms_apar.status,
+        ms_apar.id_kapal,
         ms_lokasi.lokasi,
+        ms_kapal.nama_kapal,
         tr_inspeksi.tanggal_inspeksi,
         tr_inspeksi.kondisi_tekanan,
         tr_inspeksi.hasil,
@@ -83,6 +101,8 @@ const Inspeksi = {
         ON tr_inspeksi.id_apar = ms_apar.id_apar
       LEFT JOIN ms_lokasi
         ON ms_apar.id_lokasi = ms_lokasi.id_lokasi
+      LEFT JOIN ms_kapal
+        ON ms_apar.id_kapal = ms_kapal.id_kapal
       WHERE tr_inspeksi.id_inspeksi = ?
     `;
 

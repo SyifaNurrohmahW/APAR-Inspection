@@ -1,26 +1,34 @@
 const db = require('mysql2');
 require('dotenv').config();
 
-const host = process.env.DB_HOST || process.env.MYSQLHOST || '127.0.0.1';
-const user = process.env.DB_USER || process.env.MYSQLUSER;
-const password = process.env.DB_PASSWORD || process.env.MYSQLPASSWORD;
-const database = process.env.DB_NAME || process.env.MYSQLDATABASE;
-const port = process.env.DB_PORT || process.env.MYSQLPORT ? Number(process.env.DB_PORT || process.env.MYSQLPORT) : 3306;
+const connectionUri = process.env.MYSQL_URL || process.env.DATABASE_URL;
 
-console.log('Connecting to Database host:', host, 'port:', port, 'user:', user, 'database:', database);
+let pool;
+if (connectionUri) {
+    console.log('Connecting to Database using connection URI');
+    pool = db.createPool(connectionUri);
+} else {
+    const host = process.env.DB_HOST || process.env.MYSQLHOST || '127.0.0.1';
+    const user = process.env.DB_USER || process.env.MYSQLUSER;
+    const password = process.env.DB_PASSWORD || process.env.MYSQLPASSWORD;
+    const database = process.env.DB_NAME || process.env.MYSQLDATABASE;
+    const port = process.env.DB_PORT || process.env.MYSQLPORT ? Number(process.env.DB_PORT || process.env.MYSQLPORT) : 3306;
 
-const pool = db.createPool({
-    host: host,
-    user: user,
-    password: password,
-    database: database,
-    port: port,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    enableKeepAlive: true,
-    keepAliveInitialDelay: 10000
-});
+    console.log('Connecting to Database host:', host, 'port:', port, 'user:', user, 'database:', database);
+
+    pool = db.createPool({
+        host: host,
+        user: user,
+        password: password,
+        database: database,
+        port: port,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 10000
+    });
+}
 
 // Tes koneksi saat pertama kali diinisialisasi
 pool.getConnection((err, connection) => {

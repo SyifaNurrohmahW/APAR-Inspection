@@ -1,7 +1,9 @@
 const PengisianUlang = require('../models/pengisianUlang');
+const getShipFilter = require('../helpers/shipFilter');
 
 exports.getAllPengisianUlang = (req, res) => {
-  PengisianUlang.getAll((err, results) => {
+  const shipFilter = getShipFilter(req);
+  PengisianUlang.getAll(shipFilter, (err, results) => {
     if (err) {
       return res.status(500).json({
         message: 'Gagal mengambil data pengisian ulang',

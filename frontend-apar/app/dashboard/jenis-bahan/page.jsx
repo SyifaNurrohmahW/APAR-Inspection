@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Flame, Layers, Download, Plus, Search, Trash2, Edit3 } from 'lucide-react';
 
 import PageHeader from '@/components/dashboard-menu/pageHeader';
@@ -16,6 +17,7 @@ import { showConfirm, showFeedback } from '@/utils/feedback';
 import { exportToExcel } from '@/utils/excelExport';
 
 export default function MasterJenisBahanPage() {
+  const router = useRouter();
   const [jenisBahanList, setJenisBahanList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,7 +29,7 @@ export default function MasterJenisBahanPage() {
     try {
       setLoading(true);
       const data = await getAllJenisBahan();
-      setJenisBahanList(data);
+      setJenisBahanList(Array.isArray(data) ? data : []);
     } catch (error) {
       showFeedback({
         title: 'Gagal Memuat Data',
@@ -40,8 +42,27 @@ export default function MasterJenisBahanPage() {
   };
 
   useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        if (String(parsed.role || '').toLowerCase() !== 'superadmin') {
+          showFeedback({
+            title: 'Akses Ditolak',
+            message: 'Hanya Superadmin yang berhak mengelola master jenis bahan.',
+            type: 'warning'
+          });
+          router.replace('/dashboard');
+          return;
+        }
+      } catch {
+        router.replace('/dashboard');
+        return;
+      }
+    }
+
     fetchJenisBahan();
-  }, []);
+  }, [router]);
 
   const handleOpenCreate = () => {
     setSelectedBahan(null);

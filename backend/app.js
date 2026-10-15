@@ -9,13 +9,24 @@ app.use(cors({
   origin: (origin, callback) => callback(null, true),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'X-Id-Kapal',
+    'x-id-kapal',
+    'Accept'
+  ]
 }));
 app.use(express.json());
 
-//login route
+// login route
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
+
+// Kapal routes
+const kapalRoutes = require('./routes/kapal');
+app.use('/api/kapal', kapalRoutes);
 
 // Data APAR routes
 const dataAparRoutes = require('./routes/dataApar');
@@ -58,18 +69,24 @@ const profileRoutes = require('./routes/profile');
 app.use('/api/profile', profileRoutes);
 
 // Init DB Tables if needed
+const KapalModel = require('./models/kapal');
+const DataPenggunaModel = require('./models/dataPengguna');
+const LokasiModel = require('./models/lokasi');
 const DataAparModel = require('./models/dataApar');
 const JenisBahanModel = require('./models/jenisBahan');
 const InspeksiModel = require('./models/inspeksi');
+
+KapalModel.initTable();
+DataPenggunaModel.initTable();
+LokasiModel.initTable();
 DataAparModel.initTable();
 JenisBahanModel.initTable();
 InspeksiModel.initTable();
 
 if (require.main === module) {
-  app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Backend listening on 0.0.0.0:${port}`);
   });
 }
-
 
 module.exports = app;

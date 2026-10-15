@@ -47,6 +47,8 @@ exports.login = (req, res) => {
       const token = jwt.sign(
         {
           id_users: user.id_users,
+          id_kapal: user.id_kapal,
+          nama_kapal: user.nama_kapal || null,
           nama: user.nama,
           email: user.email,
           role: normalizedRole
@@ -62,6 +64,9 @@ exports.login = (req, res) => {
         token,
         user: {
           id_users: user.id_users,
+          id_kapal: user.id_kapal,
+          nama_kapal: user.nama_kapal || null,
+          kode_kapal: user.kode_kapal || null,
           nama: user.nama,
           email: user.email,
           no_hp: user.no_hp,
