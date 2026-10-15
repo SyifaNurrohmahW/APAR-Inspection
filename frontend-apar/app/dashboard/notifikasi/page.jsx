@@ -76,6 +76,7 @@ export default function NotifikasiPage() {
   const [loading, setLoading] = useState(true);
   const [waStatus, setWaStatus] = useState(null);
   const [syncingWa, setSyncingWa] = useState(false);
+  const [isSuperadmin, setIsSuperadmin] = useState(false);
 
   const loadNotifikasi = async () => {
     try {
@@ -105,6 +106,21 @@ export default function NotifikasiPage() {
   useEffect(() => {
     let isMounted = true;
 
+    let superadminCheck = false;
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        superadminCheck = String(parsed.role || '').toLowerCase() === 'superadmin';
+      }
+    } catch {
+      superadminCheck = false;
+    }
+
+    if (isMounted) {
+      setIsSuperadmin(superadminCheck);
+    }
+
     const loadInitialData = async () => {
       try {
         const data = await getAllNotifikasi();
@@ -126,7 +142,9 @@ export default function NotifikasiPage() {
         }
       }
 
-      loadWaStatus();
+      if (superadminCheck) {
+        loadWaStatus();
+      }
     };
 
     loadInitialData();
@@ -231,33 +249,42 @@ export default function NotifikasiPage() {
       />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        {/* Status Fonnte WA Badge */}
-        <div className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 shadow-sm border border-[#f0e8e4]">
-          <MessageSquare size={18} className={waStatus?.ready ? "text-[#008f55]" : "text-[#e95345]"} />
-          <span className="text-xs font-semibold text-[#6f625f]">
-            Status Fonnte:
-          </span>
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
-              waStatus?.ready
-                ? 'bg-[#e7f8ef] text-[#008f55]'
-                : 'bg-[#fee9e6] text-[#e95345]'
-            }`}
-          >
-            {waStatus?.ready ? 'Terhubung (Ready)' : waStatus?.status || 'Belum Terhubung'}
-          </span>
-        </div>
+        {/* Status Fonnte WA Badge - Khusus Superadmin */}
+        {isSuperadmin ? (
+          <div className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 shadow-sm border border-[#f0e8e4]">
+            <MessageSquare size={18} className={waStatus?.ready ? "text-[#008f55]" : "text-[#e95345]"} />
+            <span className="text-xs font-semibold text-[#6f625f]">
+              Status Fonnte:
+            </span>
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                waStatus?.ready
+                  ? 'bg-[#e7f8ef] text-[#008f55]'
+                  : 'bg-[#fee9e6] text-[#e95345]'
+              }`}
+            >
+              {waStatus?.ready ? 'Terhubung (Ready)' : waStatus?.status || 'Belum Terhubung'}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#877874]">
+            <Bell size={15} className="text-[#e95345]" />
+            <span>Pemberitahuan & Peringatan APAR Terkini</span>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSyncWaReminders}
-            disabled={syncingWa}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#008f55] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#007546] disabled:cursor-not-allowed disabled:bg-[#d8cfcb]"
-          >
-            <RefreshCw size={16} className={syncingWa ? 'animate-spin' : ''} />
-            {syncingWa ? 'Mengirim...' : 'Kirim Pengingat WA'}
-          </button>
+          {isSuperadmin && (
+            <button
+              type="button"
+              onClick={handleSyncWaReminders}
+              disabled={syncingWa}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#008f55] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#007546] disabled:cursor-not-allowed disabled:bg-[#d8cfcb]"
+            >
+              <RefreshCw size={16} className={syncingWa ? 'animate-spin' : ''} />
+              {syncingWa ? 'Mengirim...' : 'Kirim Pengingat WA'}
+            </button>
+          )}
 
           <button
             type="button"
