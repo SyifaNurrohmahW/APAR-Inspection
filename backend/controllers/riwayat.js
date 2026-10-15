@@ -1,7 +1,9 @@
 const Riwayat = require('../models/riwayat');
+const getShipFilter = require('../helpers/shipFilter');
 
 exports.getAllRiwayat = (req, res) => {
-  Riwayat.getAll((err, results) => {
+  const shipFilter = getShipFilter(req);
+  Riwayat.getAll(shipFilter, (err, results) => {
     if (err) {
       return res.status(500).json({
         message: 'Gagal mengambil data riwayat',

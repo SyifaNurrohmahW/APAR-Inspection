@@ -1,8 +1,9 @@
 const DataApar = require('../models/dataApar');
-
+const getShipFilter = require('../helpers/shipFilter');
 
 exports.getAllApar = (req, res) => {
-  DataApar.getAll((err, results) => {
+  const shipFilter = getShipFilter(req);
+  DataApar.getAll(shipFilter, (err, results) => {
     if (err) {
       return res.status(500).json({
         message: 'Gagal mengambil data APAR',
@@ -19,6 +20,13 @@ exports.getAllApar = (req, res) => {
 
 exports.createApar = (req, res) => {
     const data = req.body;
+
+    // Jika bukan superadmin, id_kapal wajib mengikuti kapal yang ditugaskan ke user
+    if (req.user && req.user.role !== 'superadmin') {
+      data.id_kapal = req.user.id_kapal || 1;
+    } else if (!data.id_kapal) {
+      data.id_kapal = getShipFilter(req) || 1;
+    }
 
     DataApar.create(data, (err, result) => {
         if (err) {
@@ -71,6 +79,11 @@ exports.updateApar = (req, res) => {
     const { id } = req.params;
     const data = req.body;
 
+    // Non-superadmin tidak diperbolehkan mengubah id_kapal
+    if (req.user && req.user.role !== 'superadmin') {
+      delete data.id_kapal;
+    }
+
     DataApar.update(id, data, (err, result) => {
         if (err) {
             return res.status(500).json({
@@ -89,6 +102,11 @@ exports.updateApar = (req, res) => {
 exports.patchApar = (req, res) => {
     const { id } = req.params;
     const data = req.body;
+
+    // Non-superadmin tidak diperbolehkan mengubah id_kapal
+    if (req.user && req.user.role !== 'superadmin') {
+      delete data.id_kapal;
+    }
 
     DataApar.updatePartial(id, data, (err, result) => {
         if (err) {
@@ -130,6 +148,5 @@ exports.deleteApar = (req, res) => {
             message: 'Berhasil menghapus data APAR',
             data: result
         });
-    })
-
+    });
 };

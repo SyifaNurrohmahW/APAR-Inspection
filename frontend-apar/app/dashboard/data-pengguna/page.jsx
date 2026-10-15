@@ -12,7 +12,8 @@ import {
   Search,
   Edit3,
   Trash2,
-  Filter
+  Filter,
+  Ship
 } from 'lucide-react';
 
 import StatCard from '@/components/dashboard-menu/statCard';
@@ -370,6 +371,7 @@ export default function DataPenggunaPage() {
                 <th className="px-4 py-3.5">Email</th>
                 <th className="px-4 py-3.5">No HP</th>
                 <th className="px-4 py-3.5">Role</th>
+                <th className="px-4 py-3.5">Penugasan Kapal</th>
                 <th className="px-4 py-3.5">Status</th>
                 <th className="px-4 py-3.5 text-right">Aksi</th>
               </tr>
@@ -377,13 +379,13 @@ export default function DataPenggunaPage() {
             <tbody className="divide-y divide-[#f0e8e4]">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-[#6f625f]">
+                  <td colSpan={8} className="px-4 py-8 text-center text-[#6f625f]">
                     Memuat data pengguna...
                   </td>
                 </tr>
               ) : filteredPengguna.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-[#6f625f]">
+                  <td colSpan={8} className="px-4 py-8 text-center text-[#6f625f]">
                     Belum ada data pengguna yang sesuai.
                   </td>
                 </tr>
@@ -404,6 +406,23 @@ export default function DataPenggunaPage() {
                     <td className="px-4 py-4 text-[#6f625f]">{item.email}</td>
                     <td className="px-4 py-4 text-[#6f625f]">{item.no_hp || '-'}</td>
                     <td className="px-4 py-4">{getRoleBadge(item.role)}</td>
+                    <td className="px-4 py-4">
+                      {String(item.role).toLowerCase() === 'superadmin' ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700">
+                          <Ship size={13} />
+                          Semua Kapal
+                        </span>
+                      ) : item.nama_kapal ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800">
+                          <Ship size={13} />
+                          {item.nama_kapal}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                          Belum Ditugaskan
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-4">{getStatusBadge(item.status)}</td>
                     <td className="px-4 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">

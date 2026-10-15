@@ -6,16 +6,20 @@ const Profile = {
   getById: (id_users, callback) => {
     const query = `
       SELECT 
-        id_users,
-        nama,
-        email,
-        no_hp,
-        role,
-        status,
-        created_at,
-        updated_at
+        ms_users.id_users,
+        ms_users.id_kapal,
+        ms_users.nama,
+        ms_users.email,
+        ms_users.no_hp,
+        ms_users.role,
+        ms_users.status,
+        ms_users.created_at,
+        ms_users.updated_at,
+        ms_kapal.nama_kapal,
+        ms_kapal.kode_kapal
       FROM ms_users
-      WHERE id_users = ?
+      LEFT JOIN ms_kapal ON ms_users.id_kapal = ms_kapal.id_kapal
+      WHERE ms_users.id_users = ?
     `;
 
     db.query(query, [id_users], callback);

@@ -15,11 +15,13 @@ import {
   RefreshCcw,
   Settings,
   Users,
-  X
+  X,
+  Ship
 } from 'lucide-react';
 
 import { clearAuthState } from '@/utils/authState';
 import { showConfirm } from '@/utils/feedback';
+import { getActiveShip } from '@/services/api';
 
 const menuGroups = [
   {
@@ -43,12 +45,19 @@ const menuGroups = [
       {
         title: 'Jenis Bahan',
         href: '/dashboard/jenis-bahan',
-        icon: Layers
+        icon: Layers,
+        superadminOnly: true
       },
       {
         title: 'Lokasi',
         href: '/dashboard/lokasi',
         icon: MapPin
+      },
+      {
+        title: 'Data Kapal',
+        href: '/dashboard/master-kapal',
+        icon: Ship,
+        superadminOnly: true
       },
       {
         title: 'Inspeksi',
@@ -119,6 +128,7 @@ export default function Sidebar({ isOpen = false, onClose }) {
     nama: 'Pengguna',
     role: 'Pengguna'
   });
+  const [activeShip, setActiveShipState] = useState({ id: 'all', nama: 'Semua Kapal' });
 
   const syncStoredUser = () => {
     const storedUser = localStorage.getItem('user');
@@ -138,12 +148,21 @@ export default function Sidebar({ isOpen = false, onClose }) {
     }
   };
 
+  const syncActiveShip = () => {
+    setActiveShipState(getActiveShip());
+  };
+
   useEffect(() => {
     syncStoredUser();
+    syncActiveShip();
     window.addEventListener('apar-user-updated', syncStoredUser);
+    window.addEventListener('apar-user-updated', syncActiveShip);
+    window.addEventListener('apar-ship-changed', syncActiveShip);
 
     return () => {
       window.removeEventListener('apar-user-updated', syncStoredUser);
+      window.removeEventListener('apar-user-updated', syncActiveShip);
+      window.removeEventListener('apar-ship-changed', syncActiveShip);
     };
   }, []);
 
@@ -215,8 +234,23 @@ export default function Sidebar({ isOpen = false, onClose }) {
             </button>
           </div>
 
+          {/* Active Ship Badge in Sidebar */}
+          <div className="mx-4 mt-4 mb-1 rounded-xl border border-white/10 bg-white/[0.04] p-3 flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#e95345]/20 text-[#e95345]">
+              <Ship size={16} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 leading-none">
+                Kapal Aktif
+              </span>
+              <p className="truncate text-xs font-bold text-white mt-1 leading-none">
+                {activeShip.nama}
+              </p>
+            </div>
+          </div>
+
           {/* Navigation Links */}
-          <nav className="flex-1 overflow-y-auto px-4 py-5">
+          <nav className="flex-1 overflow-y-auto px-4 py-4">
             {visibleMenuGroups.map((group) => (
               <div key={group.title} className="mb-7 last:mb-0">
                 <p className="mb-3 px-3 text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-600">

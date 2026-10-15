@@ -8,10 +8,13 @@ import {
   Lock,
   Phone,
   ShieldCheck,
-  CheckCircle
+  CheckCircle,
+  Ship
 } from 'lucide-react';
+import { getAllKapal } from '@/services/kapalService';
 
 const emptyForm = {
+  id_kapal: '',
   nama: '',
   email: '',
   no_hp: '',
@@ -26,6 +29,7 @@ const getInitialForm = (initialData) => {
   }
 
   return {
+    id_kapal: initialData.id_kapal ? String(initialData.id_kapal) : '',
     nama: initialData.nama || '',
     email: initialData.email || '',
     no_hp: initialData.no_hp || '',
@@ -43,6 +47,15 @@ export default function DataPenggunaModal({
   initialData = null
 }) {
   const [form, setForm] = useState(() => getInitialForm(initialData));
+  const [kapalOptions, setKapalOptions] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      getAllKapal()
+        .then((res) => setKapalOptions(res || []))
+        .catch(() => setKapalOptions([]));
+    }
+  }, [isOpen]);
 
   const roleOptions = [
     { label: 'Admin', value: 'admin' },
@@ -104,7 +117,13 @@ export default function DataPenggunaModal({
       return;
     }
 
+    if (form.role !== 'superadmin' && !form.id_kapal) {
+      alert('Silakan pilih kapal penugasan untuk pengguna ini.');
+      return;
+    }
+
     const payload = {
+      id_kapal: form.role === 'superadmin' ? null : (form.id_kapal ? Number(form.id_kapal) : null),
       nama: form.nama,
       email: form.email,
       no_hp: form.no_hp,
@@ -289,6 +308,45 @@ export default function DataPenggunaModal({
                 </div>
               </div>
             </div>
+
+            {form.role !== 'superadmin' ? (
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-[#1f1b1a]">
+                  Penugasan Kapal <span className="text-[#e95345]">*</span>
+                </label>
+
+                <div className="relative">
+                  <Ship
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#b5a7a2]"
+                  />
+                  <select
+                    name="id_kapal"
+                    value={form.id_kapal}
+                    onChange={handleChange}
+                    required
+                    className="h-11 w-full rounded-xl border border-[#eadfdb] bg-white pl-11 pr-4 text-black outline-none transition focus:border-[#e95345] focus:ring-2 focus:ring-[#f6b7af]"
+                  >
+                    <option value="">-- Pilih Kapal Penugasan --</option>
+                    {kapalOptions.map((item) => (
+                      <option key={item.id_kapal} value={item.id_kapal}>
+                        {item.nama_kapal} ({item.kode_kapal})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="mt-1 text-xs text-[#8c7c78]">
+                  Pengguna hanya dapat mengakses dan menginspeksi data pada kapal yang ditugaskan ini.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-xs text-emerald-900 flex items-center gap-2">
+                <Ship size={16} className="text-emerald-700 shrink-0" />
+                <span>
+                  <strong>Akses Global Superadmin:</strong> Pengguna dengan role Superadmin otomatis memiliki akses ke semua kapal.
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="mt-8 flex justify-end gap-3">

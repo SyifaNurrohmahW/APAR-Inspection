@@ -151,9 +151,11 @@ export default function LokasiPage() {
     };
 
     loadLokasi();
+    window.addEventListener('apar-ship-changed', loadLokasi);
 
     return () => {
       isMounted = false;
+      window.removeEventListener('apar-ship-changed', loadLokasi);
     };
   }, []);
 

@@ -1,7 +1,9 @@
 const Lokasi = require('../models/lokasi');
+const getShipFilter = require('../helpers/shipFilter');
 
 exports.getAllLokasi = (req, res) => {
-    Lokasi.getAll((err, results) => {
+    const shipFilter = getShipFilter(req);
+    Lokasi.getAll(shipFilter, (err, results) => {
         if (err) {  
             return res.status(500).json({
                 message: 'Gagal mengambil data lokasi',
@@ -17,6 +19,12 @@ exports.getAllLokasi = (req, res) => {
 
 exports.createLokasi = (req, res) => {
     const data = req.body;
+    if (req.user && req.user.role !== 'superadmin') {
+        data.id_kapal = req.user.id_kapal || 1;
+    } else if (!data.id_kapal) {
+        data.id_kapal = getShipFilter(req) || 1;
+    }
+
     Lokasi.create(data, (err, result) => {
         if (err) {
             return res.status(500).json({
@@ -29,7 +37,7 @@ exports.createLokasi = (req, res) => {
             data: result
         });
     });
-}
+};
 
 exports.getLokasiById = (req, res) => {
     const { id } = req.params;
@@ -48,8 +56,8 @@ exports.getLokasiById = (req, res) => {
         }
 
         res.status(200).json({
-            message : "Berhasil mengambil data lokasi berdasarkan Id",
-            data : results[0]
+            message: "Berhasil mengambil data lokasi berdasarkan Id",
+            data: results[0]
         });
     });
 };
@@ -57,6 +65,11 @@ exports.getLokasiById = (req, res) => {
 exports.updateLokasi = (req, res) => {
     const { id } = req.params;
     const data = req.body;
+
+    if (req.user && req.user.role !== 'superadmin') {
+        delete data.id_kapal;
+    }
+
     Lokasi.update(id, data, (err, result) => {
         if (err) {
             return res.status(500).json({   
@@ -68,13 +81,16 @@ exports.updateLokasi = (req, res) => {
             message: 'Berhasil memperbarui data lokasi',
             data: result
         });
-    }
-);
-}
+    });
+};
 
 exports.patchLokasi = (req, res) => {
     const { id } = req.params;
     const data = req.body;
+
+    if (req.user && req.user.role !== 'superadmin') {
+        delete data.id_kapal;
+    }
 
     Lokasi.updatePartial(id, data, (err, result) => {
         if (err) {
@@ -101,7 +117,7 @@ exports.patchLokasi = (req, res) => {
             data: result
         });
     });
-}
+};
 
 exports.deleteLokasi = (req, res) => {
     const { id } = req.params;
@@ -116,8 +132,5 @@ exports.deleteLokasi = (req, res) => {
             message: 'Berhasil menghapus data lokasi',
             data: result
         });
-
     });
 };
-
-

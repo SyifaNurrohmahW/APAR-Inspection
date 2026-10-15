@@ -2,39 +2,78 @@ const db = require('../config/connection');
 const buildPartialUpdate = require('../helpers/partialUpdate');
 
 const DataPengguna = {
-  // Ambil semua pengguna
-  getAll: (callback) => {
-    const query = `
+  // Inisialisasi/memastikan kolom id_kapal ada di ms_users
+  initTable: (callback) => {
+    db.query("SHOW COLUMNS FROM ms_users LIKE 'id_kapal'", (err, columns) => {
+      if (!err && columns.length === 0) {
+        db.query("ALTER TABLE ms_users ADD COLUMN id_kapal INT NULL DEFAULT NULL AFTER id_users", (alterErr) => {
+          if (alterErr) {
+            console.error("Gagal menambahkan kolom id_kapal ke ms_users:", alterErr);
+          } else {
+            console.log("Kolom id_kapal berhasil ditambahkan ke ms_users.");
+          }
+          if (callback) callback(alterErr);
+        });
+      } else {
+        if (callback) callback(err);
+      }
+    });
+  },
+
+  // Ambil semua pengguna (opsional filter id_kapal)
+  getAll: (id_kapal_filter, callback) => {
+    // Jika argumen pertama berupa callback
+    if (typeof id_kapal_filter === 'function') {
+      callback = id_kapal_filter;
+      id_kapal_filter = null;
+    }
+
+    let query = `
       SELECT 
-        id_users,
-        nama,
-        email,
-        no_hp,
-        role,
-        status,
-        created_at,
-        updated_at
+        ms_users.id_users,
+        ms_users.id_kapal,
+        ms_users.nama,
+        ms_users.email,
+        ms_users.no_hp,
+        ms_users.role,
+        ms_users.status,
+        ms_users.created_at,
+        ms_users.updated_at,
+        ms_kapal.nama_kapal,
+        ms_kapal.kode_kapal
       FROM ms_users
-      ORDER BY id_users DESC
+      LEFT JOIN ms_kapal ON ms_users.id_kapal = ms_kapal.id_kapal
     `;
 
-    db.query(query, callback);
+    const values = [];
+    if (id_kapal_filter) {
+      query += ` WHERE ms_users.id_kapal = ?`;
+      values.push(id_kapal_filter);
+    }
+
+    query += ` ORDER BY ms_users.id_users DESC`;
+
+    db.query(query, values, callback);
   },
 
   // Ambil pengguna berdasarkan ID
   getById: (id_users, callback) => {
     const query = `
       SELECT 
-        id_users,
-        nama,
-        email,
-        no_hp,
-        role,
-        status,
-        created_at,
-        updated_at
+        ms_users.id_users,
+        ms_users.id_kapal,
+        ms_users.nama,
+        ms_users.email,
+        ms_users.no_hp,
+        ms_users.role,
+        ms_users.status,
+        ms_users.created_at,
+        ms_users.updated_at,
+        ms_kapal.nama_kapal,
+        ms_kapal.kode_kapal
       FROM ms_users
-      WHERE id_users = ?
+      LEFT JOIN ms_kapal ON ms_users.id_kapal = ms_kapal.id_kapal
+      WHERE ms_users.id_users = ?
     `;
 
     db.query(query, [id_users], callback);
@@ -45,6 +84,7 @@ const DataPengguna = {
     const query = `
       SELECT 
         id_users,
+        id_kapal,
         nama,
         email,
         no_hp,
@@ -63,6 +103,7 @@ const DataPengguna = {
     const query = `
       INSERT INTO ms_users
       (
+        id_kapal,
         nama,
         email,
         no_hp,
@@ -72,10 +113,11 @@ const DataPengguna = {
         created_at,
         updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+      VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     `;
 
     const values = [
+      data.id_kapal || null,
       data.nama,
       data.email,
       data.no_hp,
@@ -92,6 +134,7 @@ const DataPengguna = {
     const query = `
       UPDATE ms_users
       SET
+        id_kapal = ?,
         nama = ?,
         email = ?,
         no_hp = ?,
@@ -102,6 +145,7 @@ const DataPengguna = {
     `;
 
     const values = [
+      data.id_kapal || null,
       data.nama,
       data.email,
       data.no_hp,
@@ -118,6 +162,7 @@ const DataPengguna = {
     const query = `
       UPDATE ms_users
       SET
+        id_kapal = ?,
         nama = ?,
         email = ?,
         no_hp = ?,
@@ -129,6 +174,7 @@ const DataPengguna = {
     `;
 
     const values = [
+      data.id_kapal || null,
       data.nama,
       data.email,
       data.no_hp,
@@ -147,7 +193,7 @@ const DataPengguna = {
       'id_users',
       id_users,
       data,
-      ['nama', 'email', 'no_hp', 'password', 'role', 'status'],
+      ['id_kapal', 'nama', 'email', 'no_hp', 'password', 'role', 'status'],
       { touchUpdatedAt: true }
     );
 

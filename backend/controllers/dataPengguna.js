@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const DataPengguna = require('../models/dataPengguna');
+const getShipFilter = require('../helpers/shipFilter');
 
 const normalizeRole = (role) => {
   const normalizedRole = String(role || '').trim().toLowerCase();
@@ -34,7 +35,8 @@ const normalizeStatus = (status) => {
 };
 
 exports.getAllPengguna = (req, res) => {
-  DataPengguna.getAll((err, results) => {
+  const shipFilter = getShipFilter(req);
+  DataPengguna.getAll(shipFilter, (err, results) => {
     if (err) {
       return res.status(500).json({
         message: 'Gagal mengambil data pengguna',
@@ -75,6 +77,7 @@ exports.getPenggunaById = (req, res) => {
 
 exports.createPengguna = (req, res) => {
   const {
+    id_kapal,
     nama,
     email,
     no_hp,
@@ -121,7 +124,10 @@ exports.createPengguna = (req, res) => {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
 
+      const targetShipId = normalizedRole === 'superadmin' ? null : (id_kapal ? Number(id_kapal) : null);
+
       const data = {
+        id_kapal: targetShipId,
         nama,
         email,
         no_hp: no_hp || null,
@@ -142,6 +148,7 @@ exports.createPengguna = (req, res) => {
           message: 'Berhasil menambahkan data pengguna',
           data: {
             id_users: results.insertId,
+            id_kapal: data.id_kapal,
             nama,
             email,
             no_hp: no_hp || null,
@@ -163,6 +170,7 @@ exports.updatePengguna = (req, res) => {
   const { id } = req.params;
 
   const {
+    id_kapal,
     nama,
     email,
     no_hp,
@@ -208,11 +216,14 @@ exports.updatePengguna = (req, res) => {
       });
     }
 
+    const targetShipId = normalizedRole === 'superadmin' ? null : (id_kapal ? Number(id_kapal) : null);
+
     try {
       if (password && password.trim() !== '') {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const data = {
+          id_kapal: targetShipId,
           nama,
           email,
           no_hp: no_hp || null,
@@ -239,6 +250,7 @@ exports.updatePengguna = (req, res) => {
             message: 'Berhasil mengubah data pengguna',
             data: {
               id_users: id,
+              id_kapal: data.id_kapal,
               nama,
               email,
               no_hp: no_hp || null,
@@ -249,6 +261,7 @@ exports.updatePengguna = (req, res) => {
         });
       } else {
         const data = {
+          id_kapal: targetShipId,
           nama,
           email,
           no_hp: no_hp || null,
@@ -274,6 +287,7 @@ exports.updatePengguna = (req, res) => {
             message: 'Berhasil mengubah data pengguna',
             data: {
               id_users: id,
+              id_kapal: data.id_kapal,
               nama,
               email,
               no_hp: no_hp || null,
@@ -295,7 +309,7 @@ exports.updatePengguna = (req, res) => {
 exports.patchPengguna = (req, res) => {
   const { id } = req.params;
   const data = { ...req.body };
-  const allowedFields = ['nama', 'email', 'no_hp', 'password', 'role', 'status'];
+  const allowedFields = ['id_kapal', 'nama', 'email', 'no_hp', 'password', 'role', 'status'];
   const hasValidField = allowedFields.some((field) => Object.prototype.hasOwnProperty.call(data, field));
 
   if (!hasValidField) {
@@ -322,6 +336,12 @@ exports.patchPengguna = (req, res) => {
         message: 'Status hanya boleh aktif atau nonaktif'
       });
     }
+  }
+
+  if (data.role && data.role === 'superadmin') {
+    data.id_kapal = null;
+  } else if (data.id_kapal !== undefined) {
+    data.id_kapal = data.id_kapal ? Number(data.id_kapal) : null;
   }
 
   if (Object.prototype.hasOwnProperty.call(data, 'password') && (!data.password || data.password.trim() === '')) {

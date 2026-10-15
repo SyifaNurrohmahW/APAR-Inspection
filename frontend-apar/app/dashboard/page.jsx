@@ -106,12 +106,11 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      loadDashboard();
-    }, 0);
+    loadDashboard();
+    window.addEventListener('apar-ship-changed', loadDashboard);
 
     return () => {
-      window.clearTimeout(timer);
+      window.removeEventListener('apar-ship-changed', loadDashboard);
     };
   }, []);
 

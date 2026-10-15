@@ -2,9 +2,14 @@ const db = require('../config/connection');
 const buildPartialUpdate = require('../helpers/partialUpdate');
 
 const Riwayat = {
-  // Ambil semua riwayat
-  getAll: (callback) => {
-    const query = `
+  // Ambil semua riwayat (opsional filter id_kapal)
+  getAll: (id_kapal_filter, callback) => {
+    if (typeof id_kapal_filter === 'function') {
+      callback = id_kapal_filter;
+      id_kapal_filter = null;
+    }
+
+    let query = `
       SELECT
         tr_riwayat.id_riwayat,
         tr_riwayat.id_users,
@@ -22,7 +27,9 @@ const Riwayat = {
         ms_apar.kode_apar,
         ms_apar.jenis,
         ms_apar.berat,
-        ms_lokasi.lokasi
+        ms_apar.id_kapal,
+        ms_lokasi.lokasi,
+        ms_kapal.nama_kapal
 
       FROM tr_inspeksi
       LEFT JOIN tr_riwayat
@@ -33,10 +40,19 @@ const Riwayat = {
         ON tr_inspeksi.id_apar = ms_apar.id_apar
       LEFT JOIN ms_lokasi
         ON ms_apar.id_lokasi = ms_lokasi.id_lokasi
-      ORDER BY tr_inspeksi.tanggal_inspeksi DESC, tr_inspeksi.id_inspeksi DESC
+      LEFT JOIN ms_kapal
+        ON ms_apar.id_kapal = ms_kapal.id_kapal
     `;
 
-    db.query(query, callback);
+    const values = [];
+    if (id_kapal_filter) {
+      query += ` WHERE ms_apar.id_kapal = ?`;
+      values.push(id_kapal_filter);
+    }
+
+    query += ` ORDER BY tr_inspeksi.tanggal_inspeksi DESC, tr_inspeksi.id_inspeksi DESC`;
+
+    db.query(query, values, callback);
   },
 
   // Ambil riwayat berdasarkan ID
@@ -59,7 +75,9 @@ const Riwayat = {
         ms_apar.kode_apar,
         ms_apar.jenis,
         ms_apar.berat,
-        ms_lokasi.lokasi
+        ms_apar.id_kapal,
+        ms_lokasi.lokasi,
+        ms_kapal.nama_kapal
 
       FROM tr_riwayat
       LEFT JOIN ms_users
@@ -70,6 +88,8 @@ const Riwayat = {
         ON tr_inspeksi.id_apar = ms_apar.id_apar
       LEFT JOIN ms_lokasi
         ON ms_apar.id_lokasi = ms_lokasi.id_lokasi
+      LEFT JOIN ms_kapal
+        ON ms_apar.id_kapal = ms_kapal.id_kapal
       WHERE tr_riwayat.id_riwayat = ?
     `;
 
@@ -96,7 +116,9 @@ const Riwayat = {
         ms_apar.kode_apar,
         ms_apar.jenis,
         ms_apar.berat,
-        ms_lokasi.lokasi
+        ms_apar.id_kapal,
+        ms_lokasi.lokasi,
+        ms_kapal.nama_kapal
 
       FROM tr_riwayat
       LEFT JOIN ms_users
@@ -107,6 +129,8 @@ const Riwayat = {
         ON tr_inspeksi.id_apar = ms_apar.id_apar
       LEFT JOIN ms_lokasi
         ON ms_apar.id_lokasi = ms_lokasi.id_lokasi
+      LEFT JOIN ms_kapal
+        ON ms_apar.id_kapal = ms_kapal.id_kapal
       WHERE tr_riwayat.id_users = ?
       ORDER BY tr_riwayat.id_riwayat DESC
     `;
